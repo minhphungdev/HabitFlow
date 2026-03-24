@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Thành Tựu - HabitFlow</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="/css/achievements_manage.css">
+    <link rel="stylesheet" href="/css/layout_dashboard.css">
+</head>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<body>
+<!--Toast notifycation-->
+<div th:replace="/layout/toastnotification.html::toast(failed=${fail}, success=${success})"></div>
+
+<!-- Sidebar -->
+<div th:replace="/layout/sidebardashboard.html"></div>
+
+<div id="content">
+    <div class="container-fluid">
+        <h1 class="page-title">Quản lý thành tựu</h1>
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="action-bar">
+                    <form action="" class="search-container" method="get">
+                        <input type="text" class="form-control search-input" name="search" placeholder="Tìm kiếm thành tựu" id="searchInput">
+                        <button type="submit" id="searchBtn" class="btn btn-search"> <i class="fas fa-search"></i></button>
+                    </form>
+                    <button class="btn btn-add" id="addAchievementBtn" th:onclick="|openCreateAchievementModal()|">
+                        <i class="fas fa-plus"></i> Thêm Thành Tựu Mới
+                    </button>
+                </div>
+
+                <!-- Achievement Table -->
+                <div class="achievement-table-container">
+                    <h2 class="table-title">Danh Sách Thành Tựu</h2>
+                    <div class="text-end mb-3">
+                        <small class="text-muted">Tổng cộng: <span th:text="${achievements.size}">12</span> thành tựu</small>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="achievement-table table">
+                            <thead>
+                            <tr>
+                                <th>Icon</th>
+                                <th>Tên & Mô tả</th>
+                                <th>Yêu cầu thói quen</th>
+                                <th>Yêu cầu thử thách</th>
+                                <th>Xu</th>
+                                <th>Thao tác</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="achievement : ${achievements}" class="achievement-row" th:style="'background-color: ' +${!achievement.available ? '#DDDDDD' : ''}" th:onclick="|openUpdateAchievementModal(${achievement.achievementId})|">
+                                <td th:style="'opacity: ' +${!achievement.available ? '20%' : ''}">
+                                    <div class="achievement-icon" th:style="'background-color: ' + ${achievement.color}+'; margin: 0 auto;'">
+                                        <i th:class="${achievement.icon}"></i>
+                                    </div>
+                                </td>
+                                <td th:style="'opacity: ' +${!achievement.available ? '20%' : ''}">
+                                    <div class="achievement-info">
+                                        <div class="achievement-name" th:text="${achievement.title}">Người mới bắt đầu</div>
+                                        <div class="achievement-description" th:text="${achievement.description}">Hoàn thành thử thách đầu tiên</div>
+                                    </div>
+                                </td>
+                                <td th:text="${achievement.requiredTask}"></td>
+                                <td th:text="${achievement.requiredChallenge}"></td>
+                                <td>
+                                    <span class="points-badge" th:text="${achievement.coinBonus}">100</span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-edit btn-delete-achievement" th:onclick="|deleteHideAchievementModal(${achievement.achievementId},'hide');event.stopPropagation()|">
+                                            <i class="fa-solid fa-eye-slash"></i>
+                                        </button>
+                                        <button class="btn btn-delete btn-delete-achievement" th:onclick="|deleteHideAchievementModal(${achievement.achievementId},'delete');event.stopPropagation()|">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination-container">
+                        <span th:if="${achievements.hasPrevious()}">
+                            <a th:href="@{/admin/achievements(page=${achievements.number - 1}, size=${achievements.size})}">Trang trước</a>
+                        </span>
+                        <span>Trang <span th:text="${achievements.number + 1}">1</span> / <span th:text="${achievements.totalPages}">1</span></span>
+                        <span th:if="${achievements.hasNext()}">
+                            <a th:href="@{/admin/achievements(page=${achievements.number + 1}, size=${achievements.size})}">Trang sau</a>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="deleteHideAchievementModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteHideTitle">Modal title</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body" id="deleteHideContent">
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                            <a type="button" class="btn btn-danger">Xác nhận</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Achievements -->
+            <div class="col-lg-4">
+                <div class="user-achievements-container">
+                    <h2 class="user-achievements-title">Thành tựu người dùng</h2>
+                    <div class="user-achievements-content">
+                        <div th:each="userAch : ${userAchievementsToday}" class="user-achievement-item">
+                            <div class="user-avatar">
+                                <img style="width: 50px;height: 50px;" th:src="${userAch.user.avatar!=null?userAch.user.avatar:'/images/user_ava.png'}" alt="">
+                            </div>
+                            <div class="user-achievement-info">
+                                <div class="user-name" th:text="${userAch.user.username}">Nguyễn Văn A</div>
+                                <div class="user-achievement-desc" >Đã được thành tích: <strong th:text="${userAch.achievementTitle}"></strong></div>
+                                <div class="user-achievement-time" th:text="${userAch.durationAchievement}+' giờ trước'">4 giờ trước</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Achievement Modal -->
+<div class="modal fade" id="achievementModal" tabindex="-1" aria-labelledby="achievementModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="achievementModalLabel">Thêm Thành Tựu Mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="achievementForm" th:object="${achievement}" method="post">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <input type="text" style="display: none" id="achievementId" name="id" th:field="*{achievementId}">
+                            <div class="mb-3">
+                                <label for="achievementName" class="form-label">Tên thành tựu</label>
+                                <input type="text" class="form-control" id="achievementName" name="name" th:field="*{achievementTitle}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="achievementCoins" class="form-label">Điểm thưởng</label>
+                                <input type="number" class="form-control" id="achievementCoins" name="points" min="0" th:field="*{coinBonus}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="achievementDescription" class="form-label">Mô tả</label>
+                        <textarea class="form-control" id="achievementDescription" name="description" rows="3" th:field="*{achievementDescription}"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="requiredChallenge" class="form-label">Yêu cầu thử thách đạt được</label>
+                        <input type="text" class="form-control" id="requiredChallenge" name="requirement" th:field="*{requiredChallenge}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="requiredTask" class="form-label">Yêu cầu thói quen đạt được</label>
+                        <input type="text" class="form-control" id="requiredTask" name="requirement" th:field="*{requiredTask}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="bonusChallenge" class="form-label">Thử thách được nhận thêm</label>
+                        <input type="text" class="form-control" id="bonusChallenge" name="reward" th:field="*{bonusChallenge}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="bonusTask" class="form-label">Thói quen được nhận thêm</label>
+                        <input type="text" class="form-control" id="bonusTask" name="reward" th:field="*{bonusTask}">
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="achievementIcon" class="form-label">Icon (Font Awesome class)</label>
+                                <input type="text" class="form-control" id="achievementIcon" name="icon" placeholder="fas fa-trophy" th:field="*{icon}" required>
+                                <small class="form-text text-muted">Ví dụ: fas fa-trophy, fas fa-star, fas fa-crown</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="achievementColor" class="form-label">Màu sắc</label>
+                                <input type="color" class="form-control color-picker" id="achievementColor" name="color" value="#FFD700" th:field="*{color}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Xem trước</label>
+                        <div class="d-flex justify-content-center align-items-center gap-3 p-3 border rounded">
+                            <div class="achievement-icon w-3" id="previewIcon" style="background-color: #FFD700;">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div>
+                                <div class="achievement-name" id="previewName">Tên thành tựu</div>
+                                <div class="achievement-description" id="previewDescription">Mô tả thành tựu</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary" id="saveAchievementBtn">Lưu</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle responsive behavior
+        window.addEventListener('resize', function() {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.add('collapsed');
+                content.classList.add('expanded');
+            }
+        });
+        window.dispatchEvent(new Event('resize'));
+
+        window.openCreateAchievementModal = ()=>{
+            document.getElementById("achievementId").value = "";
+            document.getElementById("achievementName").value = "";
+            document.getElementById("achievementCoins").value = 0;
+            document.getElementById("achievementDescription").value = "";
+            document.getElementById("requiredChallenge").value = 0;
+            document.getElementById("requiredTask").value = 0;
+            document.getElementById("bonusChallenge").value = 0;
+            document.getElementById("bonusTask").value = 0;
+            document.getElementById("achievementIcon").value = "fa-solid fa-image-portrait";
+            document.getElementById("achievementColor").value = "#347433";
+
+            updatePreview()
+            document.getElementById("achievementModalLabel").textContent = "Tạo mới thành tựu";
+            document.getElementById("achievementForm").action = "/admin/achievements/add";
+
+            const modal = new bootstrap.Modal(document.getElementById("achievementModal"))
+            modal.show()
+        }
+
+        window.openUpdateAchievementModal = (achievementId)=>{
+            fetch(`/admin/achievements/${achievementId}`)
+                .then(response=>{
+                    if(response.url.includes("/login")){
+                        window.location.href = '/login';
+                        return;
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                document.getElementById("achievementId").value = data.achievementId||"";
+                document.getElementById("achievementName").value = data.achievementTitle||"";
+                document.getElementById("achievementCoins").value = data.coinBonus||0;
+                document.getElementById("achievementDescription").value = data.achievementDescription||"";
+                document.getElementById("requiredChallenge").value = data.requiredChallenge||0;
+                document.getElementById("requiredTask").value = data.requiredTask||0;
+                document.getElementById("bonusChallenge").value = data.bonusChallenge||0;
+                document.getElementById("bonusTask").value = data.bonusTask||0;
+                document.getElementById("achievementIcon").value = data.icon||"fa-solid fa-image-portrait";
+                document.getElementById("achievementColor").value = data.color||"#347433";
+
+                document.getElementById("achievementModalLabel").textContent = "Sửa thành tựu";
+                document.getElementById("achievementForm").action = `/admin/achievements/update`;
+                updatePreview()
+                const modal = new bootstrap.Modal(document.getElementById("achievementModal"))
+                modal.show()
+            }).catch(err=>{
+                console.log(err)
+                alert("Lỗi xảy ra! Phiên đăng nhập kết thúc mời đăng nhập lại!"+err)
+            })
+
+        }
+
+        window.deleteHideAchievementModal= (achievementId,type)=>{
+            if(type == "delete"){
+                document.getElementById("deleteHideTitle").textContent= 'Xóa thành tựu!'
+                document.getElementById("deleteHideContent").innerHTML=`<p>Bạn xác nhận xóa thành tựu này. Thành tựu này sẽ bị xóa khỏi hệ thống!</p>`
+                document.querySelector("#deleteHideAchievementModal a").href = `/admin/achievements/delete/${achievementId}`
+            }else if(type == "hide"){
+                document.getElementById("deleteHideTitle").textContent= 'Khóa/Mở khóa Thành tựu!'
+                document.getElementById("deleteHideContent").innerHTML=`<p>Bạn xác nhận Khóa/Mở khóa thành tựu này. Người dùng sẽ không thể sử dụng thành tựu này!</p>`
+                document.querySelector("#deleteHideAchievementModal a").href = `/admin/achievements/${achievementId}/hide`
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById("deleteHideAchievementModal"))
+            modal.show();
+        }
+
+        // Update preview when form fields change
+        const previewFields = ['achievementName', 'achievementDescription', 'achievementIcon', 'achievementColor'];
+        previewFields.forEach(function(fieldId) {
+            document.getElementById(fieldId).addEventListener('input', updatePreview);
+        });
+
+        function updatePreview() {
+            const name = document.getElementById('achievementName').value || 'Tên thành tựu';
+            const description = document.getElementById('achievementDescription').value || 'Mô tả thành tựu';
+            const icon = document.getElementById('achievementIcon').value || 'fas fa-trophy';
+            const color = document.getElementById('achievementColor').value || '#FFD700';
+
+            document.getElementById('previewName').textContent = name;
+            document.getElementById('previewDescription').textContent = description;
+            document.getElementById('previewIcon').style.backgroundColor = color;
+            document.getElementById('previewIcon').querySelector('i').className = icon;
+        }
+
+    });
+
+</script>
+</body>
+</html>

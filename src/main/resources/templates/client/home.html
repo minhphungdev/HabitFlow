@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Thói Quen</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="/css/client_home.css">
+    <link rel="stylesheet" href="/css/layout.css">
+
+</head>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<body>
+
+<!-- Toast Notification -->
+<div th:replace="layout/toastnotification.html :: toast(failed=${failed}, success=${success})"></div>
+
+<div th:replace="layout/toastresponse.html :: toastresponse"></div>
+
+<!-- Sidebar -->
+<div th:replace="layout/sidebar.html"></div>
+
+<!-- Page Content -->
+<div id="content">
+    <div class="container-fluid">
+        <!-- Main Content Row -->
+        <div class="row">
+            <!-- Left Column: Welcome Box and Habits Section -->
+            <div class="col-lg-9">
+                <!-- User Information -->
+                <div th:replace="layout/userinformation.html :: user(user=${user},userAchievement=${userAchievement})"></div>
+
+                <!-- Welcome Box -->
+                <div class="welcome-box">
+                    <div th:if="${challengeWelcomeBox}">
+                        <h4 th:text="'Chào '+${user.userName}+'!'"></h4>
+                        <p>
+                            <span>Bạn đang ở ngày thứ </span>
+                            <strong th:text="${challengeWelcomeBox.daysSinceStart}"></strong>
+                            <span> của thử thách "</span>
+                            <strong th:text="${challengeWelcomeBox.challenge.title}"></strong>
+                            <span>"</span>
+                        </p>
+                        <p>Cố gắng tiếp tục hoàn thành thử thách để trở nên tốt hơn nhé! <i class="fas fa-fire text-danger"></i></p>
+                        <a href="/overview" class="text-primary">Xem chi tiết</a>
+
+                    </div>
+
+                    <div th:unless="${!#lists.isEmpty(userChallenges)}">
+                        <h4>Chào mừng bạn đến với HabitFlow!</h4>
+                        <p>
+                            Hành trình vạn dặm bắt đầu bằng một bước chân. <br/>
+                            Hãy bắt đầu hành trình cải thiện bản thân bằng cách tạo một thử thách mới ngay hôm nay.
+                        </p>
+                        <a href="/challenge_overview" class="btn btn-warning mt-3">Tạo thử thách đầu tiên</a>
+                    </div>
+
+                </div>
+
+                <!-- challenge Section -->
+                <div class="habits-section">
+                    <div class="row">
+                        <a th:href="'/overview/detail?challenge='+${challenge.challenge.getChallengeId()}" th:each="challenge : ${userChallenges}" class="col-md-6 mb-3 text-decoration-none">
+                            <div class="habit-card">
+                                <div class="habit-progress">
+                                    <svg viewBox="0 0 110 110">
+                                        <circle class="background" cx="50" cy="50" r="50"></circle>
+                                        <circle class="progress" cx="50" cy="50" r="50"
+                                                th:style="'--progress: ' + ${challenge.progress}"></circle>
+                                    </svg>
+                                    <div class="habit-progress-text" th:text="${challenge.progress} + '%'">50%</div>
+                                </div>
+                                <div class="habit-info">
+                                    <div class="habit-title" th:text="${challenge.getChallenge().getTitle()}">Chơi Thể Thao</div>
+                                    <div class="habit-tasks" th:text="'Bạn đã hoàn thành '+${challenge.totalCompletedTasks}+ ' và bỏ qua ' + ${challenge.skippedTasks} + ' công việc'"></div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Calendar and Rewards Section -->
+            <div class="col-lg-3">
+                <!-- Calendar -->
+                <div class="calendar">
+                    <div class="calendar__header d-flex justify-content-center bg-warning">
+                        <h3><strong>Lịch</strong></h3>
+                    </div>
+
+                    <div class="calendar__opts">
+                        <select name="calendar__month" id="calendar__month">
+                            <option th:each="month, stat : ${months}"
+                                    th:selected="${stat.count == currentMonth}"
+                                    th:text="${month}"></option>
+                        </select>
+
+                        <select name="calendar__year" id="calendar__year">
+                            <option th:each="year : ${#numbers.sequence(currentYear - 5, currentYear + 5)}"
+                                    th:selected="${year == currentYear}"
+                                    th:text="${year}"></option>
+                        </select>
+                    </div>
+
+                    <div class="calendar__body">
+                        <div class="calendar__days">
+                            <div>Su</div>
+                            <div>Mo</div>
+                            <div>Tu</div>
+                            <div>We</div>
+                            <div>Th</div>
+                            <div>Fr</div>
+                            <div>Sa</div>
+                        </div>
+
+                        <div class="calendar__dates" id="calendarDates">
+                            <!-- Calendar dates will be generated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="info-box" id="dayInfo">Chọn ngày để xem thông tin</div>
+                </div>
+
+                <!-- Rewards Section -->
+                <div class="rewards-section" style="max-height: 400px; overflow-y: auto;">
+                    <div class="rewards-header">
+                        <div class="rewards-title">Phần Thưởng</div>
+                        <button class="add-reward-btn" data-bs-toggle="modal" data-bs-target="#modalReward" >
+                            <i class="fas fa-plus"></i> Thêm Mục
+                        </button>
+                    </div>
+                    <ul class="nav nav-tabs mb-2" id="myTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#user-reward" type="button" role="tab" aria-controls="user-reward-pane" aria-selected="true">Người dùng</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#system-reward-pane" type="button" role="tab" aria-controls="system-reward-pane" aria-selected="false">Hệ thống</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="myTabContent">
+                        <div class="tab-pane fade show active" id="user-reward" role="tabpanel" aria-labelledby="user-reward" tabindex="0">
+                            <div class="rewards-contain">
+                                <div th:each="reward : ${user.getRewards()}" class="reward-item" >
+
+                                    <button class="add-reward-btn reward-name" th:data-reward-id="${reward.getRewardId()}" onclick="openEditRewardModal(this.getAttribute('data-reward-id'))" >
+                                        <div th:text="${reward.getTitle()}">Phần thưởng</div>
+                                    </button>
+
+                                    <button class="reward-points d-flex flex-column justify-content-center align-items-center"
+                                            th:attr="data-reward-id=${reward.getRewardId()}"
+                                            onclick="exchangeReward(this.getAttribute('data-reward-id'))">
+                                        <img src="/images/coin-icon.png" alt="coin" class="coin-icon">
+                                        <span th:text="${reward.getCoinCost()}">10</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="system-reward-pane" role="tabpanel" aria-labelledby="system-reward" tabindex="0">
+                            <div class="rewards-contain">
+                                <div th:each="reward : ${systemRewards}" class="reward-item system-reward-item" >
+                                    <div class="reward-name d-flex align-items-center">
+                                        <i th:class="'system-reward-icon ' + ${reward.icon}"></i>
+                                        <div>
+                                            <div th:text="${reward.title}" class="reward-title"></div>
+                                            <small th:text="${reward.description}"></small>
+                                        </div>
+                                    </div>
+                                    <button class="reward-points system-reward-points d-flex flex-column justify-content-center align-items-center"
+                                            th:onclick="|buySystemReward(${reward.id}, ${reward.cost})|">
+                                        <img src="/images/coin-icon.png" alt="coin" class="coin-icon">
+                                        <span th:text="${reward.cost}"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Create Reward-->
+            <div class="modal fade" id="modalReward" tabindex="-1" aria-labelledby="modalRewardLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalRewardLabel">Tạo Phần Thưởng</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="rewardForm" th:action="@{/rewards/save}" method="post" th:object="${newReward}">
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">Tiêu đề <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="title" th:field="*{title}">
+                                    <div id="titleError" class="text-danger mt-1" style="display: none;">Vui lòng nhập tiêu đề.</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="notes" class="form-label">Ghi chú</label>
+                                    <textarea class="form-control" id="notes" th:field="*{description}" rows="3" placeholder="Thêm ghi chú"></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="coinCost" class="form-label">Chi phí</label>
+                                    <div class="input-group">
+                                <span class="input-group-text">
+                                    <img src="/images/coin-icon.png" alt="coin" class="coin-icon" style="width: 16px; height: 16px;">
+                                </span>
+                                        <input type="number" class="form-control" id="coinCost" th:field="*{coinCost}" min="0">
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                    <button type="submit" class="btn btn-primary">Lưu</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Edit Reward -->
+            <div class="modal fade" id="editReward" tabindex="-1" aria-labelledby="modalEditRewardLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalEditRewardLabel">Chỉnh Sửa Phần Thưởng</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="rewardUpdateForm" th:action="@{/rewards/update}" method="post" th:object="${updateReward}">
+                                <input type="hidden" id="updateRewardId" th:field="*{rewardId}">
+                                <div class="mb-3">
+                                    <label for="updateTitle" class="form-label">Tiêu đề <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="updateTitle" th:field="*{title}">
+                                    <div id="titleUpdateError" class="text-danger mt-1" style="display: none;">Vui lòng nhập tiêu đề.</div>
+
+                                </div>
+                                <div class="mb-3">
+                                    <label for="updateDescription" class="form-label">Ghi chú</label>
+                                    <textarea class="form-control" id="updateDescription" rows="3" placeholder="Thêm ghi chú" th:field="*{description}"></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="updateCoinCost" class="form-label">Chi phí</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <img src="/images/coin-icon.png" alt="coin" class="coin-icon" style="width: 16px; height: 16px;">
+                                        </span>
+                                        <input type="number" class="form-control" id="updateCoinCost" name="coinCost" min="0" th:field="*{coinCost}">
+                                    </div>
+                                </div>
+                                <div class="modal-footer d-flex justify-content-between">
+                                    <div>
+                                        <button type="button" class="btn btn-danger" data-bs-toggle="modal"
+                                                data-bs-target="#deleteRewardModal">Xóa</button>
+                                    </div>
+                                    <div>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                        <button type="submit" class="btn btn-primary">Lưu</button>
+                                    </div>
+
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Delete Reward -->
+            <div class="modal fade" id="deleteRewardModal" tabindex="-1" aria-labelledby="modalDeleteRewardLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="exampleModalLabel">Xóa phần thưởng</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Đóng"></button>
+                        </div>
+                        <div class="modal-body">
+                            Bạn có chắc chắn muốn xóa phần thưởng này?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary"
+                                    data-bs-dismiss="modal">Đóng</button>
+                            <a id="deleteReward" class="btn btn-primary">Đồng ý</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+<!--            modal exchange sys reward-->
+            <div class="modal fade" id="sysExchangeModal" tabindex="-1" aria-labelledby="sysExchangeLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" >Đổi phần thưởng</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Bạn có chắc chắn muốn đổi phần thưởng với số xu:
+                            <span id="costExchange" class="ms-1"></span>
+                            <img src="/images/coin-icon.png" style="width: 20px;height: 20px" alt="">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                            <a id="exSysReward" class="btn btn-primary">Đồng ý</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+<!--            modal calendar-->
+            <div class="modal fade" id="calendarDayModal" tabindex="-1" aria-labelledby="calendarDayModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <!-- Modal Header with Date Navigation -->
+                        <div class="modal-header text-center p-0" style="background-color: #24CC8F; color: black;">
+                            <button type="button" class="btn text-black" id="prevDayBtn">
+                                <i class="fas fa-circle-arrow-left fa-lg"></i>
+                            </button>
+                            <h5 class="modal-title flex-grow-1 py-3 fw-bold" id="calendarDayModalLabel">23/05/2025</h5>
+                            <button type="button" class="btn text-black" id="nextDayBtn">
+                                <i class="fas fa-circle-arrow-right fa-lg"></i>
+                            </button>
+                        </div>
+
+                        <div class="modal-body" style="padding: 36px">
+
+                            <div class="mb-4">
+                                <h6 class="mb-2 fw-bold">Thói quen đã hoàn thành:</h6>
+                                <div class="tasks-contain p-3 rounded" style="background-color: rgb(229 229 229)" id="completedHabitList">
+
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <h6 class="mb-2 fw-bold">Thói quen hàng ngày đã hoàn thành:</h6>
+                                <div class="tasks-contain p-3 rounded" style="background-color: rgb(229 229 229)" id="completedDailyList">
+
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <h6 class="mb-2 fw-bold">Việc cần làm đã hoàn thành:</h6>
+                                <div class="tasks-contain p-3 rounded" style="background-color: rgb(229 229 229)" id="completedTodoList">
+
+                                </div>
+                            </div>
+
+                            <div>
+                                <h6 class="mb-2 fw-bold">Nhật Ký:</h6>
+                                <div class="tasks-contain p-3 rounded" style="background-color: rgb(229 229 229)" id="diaryList">
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+<!--            modal diary-->
+            <div class="modal fade" id="modalDiary" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header text-bg-warning p-4">
+                            <div class="w-100">
+                                <h4 id="diaryContent" class="fw-bold mb-3">Xem Nhật Ký</h4>
+                                <input type="text" id="diaryId" style="display: none">
+                                <div class="mb-3">
+                                    <label for="diaryContentInput" class="form-label">Nội dung</label>
+                                    <textarea class="form-control" id="diaryContentInput" rows="3" style="background-color: rgba(253, 253, 253, 0.5);" readonly></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Ảnh</label>
+                                    <div class="d-flex justify-content-center w-100">
+                                        <img id="diaryImagePreview" class="img-fluid mt-1" style="max-width: 300px; max-height: 400px; display: none;" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="mb-3">
+                                <strong>Task đã hoàn thành:</strong>
+                                <ul id="completedDiaryTasksList">
+                                    <!-- Danh sách task sẽ được thêm động -->
+                                </ul>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<!--check login-->
+<div th:replace="layout/checklogin.html"></div>
+<!-- Bootstrap JS Bundle with Popper -->
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script th:inline="javascript">
+
+    document.addEventListener("DOMContentLoaded", function() {
+
+        // Function to open edit reward modal
+        window.openEditRewardModal = function (rewardId) {
+            fetch(`/rewards/${rewardId}`)
+                .then(response => {
+                    if(response.url.includes("/login")){
+                        window.location.href='/login'
+                        return;
+                    }
+                return response.json();
+                })
+                .then(reward => {
+                    document.getElementById('updateRewardId').value = reward.rewardId;
+                    document.getElementById('updateTitle').value = reward.title;
+                    document.getElementById('updateDescription').value = reward.description || '';
+                    document.getElementById('updateCoinCost').value = reward.coinCost;
+                    document.getElementById('deleteReward').setAttribute("href", '/rewards/delete/' + reward.rewardId);
+
+                    const editModal = new bootstrap.Modal(document.getElementById('editReward'));
+                    editModal.show();
+                })
+                .catch(error => {
+                    console.error('Lỗi khi lấy dữ liệu phần thưởng:', error);
+                    alert('Không thể lấy dữ liệu phần thưởng.');
+                });
+        }
+
+        //Model create & edit validation
+        const form = document.getElementById("rewardForm");
+        const formUpdate = document.getElementById("rewardUpdateForm");
+        const titleInput = document.getElementById("title");
+        const titleUpdateInput = document.getElementById("updateTitle");
+        const titleError = document.getElementById("titleError");
+        const titleUpdateError = document.getElementById("titleUpdateError");
+
+        form.addEventListener("submit", (e) => {
+            let valid = true;
+            if (titleInput.value.trim() === "") {
+                titleError.style.display = "block";
+                valid = false;
+            } else {
+                titleError.style.display = "none";
+            }
+            if (!valid) {
+                e.preventDefault();
+            }
+        });
+
+        formUpdate.addEventListener("submit", (e) => {
+            let valid = true;
+
+            if (titleUpdateInput.value.trim() === "") {
+                titleUpdateError.style.display = "block";
+                valid = false;
+                console.log(valid)
+            } else {
+                titleUpdateError.style.display = "none";
+            }
+            if (!valid) {
+                e.preventDefault();
+            }
+        });
+
+        // Reward
+        window.exchangeReward = function(rewardId) {
+            fetch(`/rewards/exchange/${rewardId}`)
+                .then(response => {
+                    if (response.url.includes("/login")) {
+                        window.location.href = '/login'
+                        return;
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === "exchange") {
+
+                        showResponseToast(data.exchange, 'exchange');
+
+                        document.querySelector(".user-coin").nextElementSibling.textContent -= data.exchange;
+                    } else {
+                        showResponseToast(data.message || 'Lỗi khi đổi phần thưởng!', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showResponseToast('Lỗi khi đổi phần thưởng!', 'error');
+                });
+        }
+
+        window.buySystemReward = function(rewardId, cost) {
+            document.getElementById("costExchange").textContent = cost
+            document.getElementById("exSysReward").setAttribute("href",`/rewards/buy/${rewardId}`)
+
+            const modal = new bootstrap.Modal(document.getElementById("sysExchangeModal"));
+            modal.show();
+        }
+
+        // Calendar functionality
+        const now = new Date();
+        const currentMonth = now.getMonth()+1 ;
+        const currentYear = now.getFullYear();
+
+        generateCalendar(currentYear, currentMonth);
+
+        function generateCalendar(year, month) {
+            const calendarDates = document.getElementById('calendarDates');
+            calendarDates.innerHTML = '';
+
+            const yearMonth = new Date(year, month - 1);
+            const firstDay = new Date(year, month - 1, 1);
+            const lastDay = new Date(year, month, 0);
+
+            const firstDayOfWeek = firstDay.getDay(); // 0 = Sunday
+            const daysInMonth = lastDay.getDate();
+
+            // Previous month days
+            const prevMonthLastDay = new Date(year, month - 1, 0).getDate();
+            for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+                const greyDay = prevMonthLastDay - i;
+                const dateDiv = document.createElement('div');
+                dateDiv.className = 'calendar__date calendar__date--grey';
+                dateDiv.innerHTML = `<span>${greyDay}</span>`;
+                calendarDates.appendChild(dateDiv);
+            }
+
+            // Current month days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dateDiv = document.createElement('div');
+                dateDiv.className = 'calendar__date';
+                dateDiv.innerHTML = `<span>${day}</span>`;
+                dateDiv.setAttribute('data-date', dateStr);
+                dateDiv.addEventListener('click', function() {
+                    selectDay(dateStr, this);
+                });
+
+                // Highlight today
+                const today = new Date();
+                if (year === today.getFullYear() && month === today.getMonth() + 1 && day === today.getDate()) {
+                    dateDiv.classList.add('calendar__date--selected');
+                }
+
+                calendarDates.appendChild(dateDiv);
+            }
+
+        }
+
+        // Month and year change handlers
+        const monthEl = document.getElementById('calendar__month');
+        const yearEl = document.getElementById('calendar__year');
+
+        monthEl.addEventListener('change', onChange);
+        yearEl.addEventListener('change', onChange);
+
+        function onChange() {
+            const selectedMonth = monthEl.selectedIndex + 1;
+            const selectedYear = parseInt(yearEl.value, 10);
+            generateCalendar(selectedYear, selectedMonth);
+        }
+
+        // Day selection
+
+        function selectDay(date, element) {
+            if (element.classList.contains('calendar__date--grey')) {
+                return;
+            }
+            selectedDate = date;
+
+            fetchCalendarData(date);
+            const modal = new bootstrap.Modal(document.getElementById('calendarDayModal'));
+            modal.show();
+        }
+
+        function fetchCalendarData(date) {
+            fetch(`/calendar/${date}`)
+                .then(response => {
+                    if (response.url.includes('/login')) {
+                        window.location.href = '/login';
+                        return;
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    document.getElementById('calendarDayModalLabel').textContent = data.selectedDate;
+
+                    console.log(data)
+
+                    const habitsList = document.getElementById('completedHabitList');
+                    habitsList.innerHTML = '';
+                    if (data.completedHabits && data.completedHabits.length > 0) {
+                        data.completedHabits.forEach(habit => {
+                            const taskItem = document.createElement('div');
+                            let bg = "";
+                            if(habit.type === "BOTH"){
+                                bg = "background-color: #f39c12;"
+                            }else if(habit.type === "POSITIVE"){
+                                bg = "background-color: #00A70B;"
+                            }else{
+                                bg = "background-color: #E70000;"
+                            }
+                            taskItem.className = 'task-item mb-2';
+                            taskItem.innerHTML = `
+                                <div class="form-check">
+                                    <label class="form-check-label">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        ${habit.title}
+                                        <span class="badge text-white ms-2" style="${bg}">+${habit.positiveCount}|${habit.negativeCount}-</span>
+                                    </label>
+                                </div>
+                            `;
+                            habitsList.appendChild(taskItem);
+                        });
+                    } else {
+                        habitsList.innerHTML = '<p>Không có thói quen nào hoàn thành trong ngày này.</p>';
+                    }
+
+                    const dailiesList = document.getElementById('completedDailyList');
+                    dailiesList.innerHTML = '';
+                    if (data.completedDaily && data.completedDaily.length > 0) {
+                        data.completedDaily.forEach(daily => {
+                            const taskItem = document.createElement('div');
+                            taskItem.className = 'task-item mb-2';
+                            taskItem.innerHTML = `
+                                <div class="form-check">
+                                    <label class="form-check-label">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        ${daily.title}
+                                    </label>
+                                </div>
+                            `;
+                            dailiesList.appendChild(taskItem);
+                        });
+                    } else {
+                        dailiesList.innerHTML = '<p>Không có thói quen hàng ngày nào hoàn thành trong ngày này.</p>';
+                    }
+
+                    const todoList = document.getElementById('completedTodoList');
+                    todoList.innerHTML = '';
+                    if (data.completedTodos && data.completedTodos.length > 0) {
+                        data.completedTodos.forEach(todo => {
+                            const taskItem = document.createElement('div');
+                            taskItem.className = 'task-item mb-2';
+                            taskItem.innerHTML = `
+                                <div class="form-check">
+                                    <label class="form-check-label">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        ${todo.title}
+                                    </label>
+                                </div>
+                            `;
+                            todoList.appendChild(taskItem);
+                        });
+                    } else {
+                        todoList.innerHTML = '<p>Không có việc cần làm nào hoàn thành trong ngày này.</p>';
+                    }
+
+                    // Hiển thị danh sách Diary
+                    const diaryList = document.getElementById('diaryList');
+                    diaryList.innerHTML = '';
+                    if (data.diaryIds && data.diaryIds.length > 0) {
+                        data.diaryIds.forEach((diaryId, index) => {
+                            const diaryItem = document.createElement('div');
+                            diaryItem.className = 'diary-item mb-2';
+                            diaryItem.innerHTML = `
+                                <button class="btn btn-link text-decoration-none" onclick="openDiaryReadModal(${diaryId})">
+                                    Nhật ký ${index + 1}
+                                </button>
+                            `;
+                            diaryList.appendChild(diaryItem);
+                        });
+                    } else {
+                        diaryList.innerHTML = '<p>Không có nhật ký nào trong ngày này.</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Lỗi khi lấy dữ liệu nhật ký:', error);
+                    alert('Không thể lấy dữ liệu nhật ký. Do phiên đăng nhập hết hạn! Mời đăng nhập lại');
+                });
+        }
+
+        window.openDiaryReadModal = function(diaryId) {
+            fetch(`/diaries/${diaryId}`)
+                .then(response => {
+                    if (response.url.includes('/login')) {
+                        window.location.href = '/login';
+                        return;
+                    }
+                    return response.json();
+                })
+                .then(diary => {
+                    document.getElementById("diaryId").value = diaryId;
+                    document.getElementById("diaryContentInput").value = diary.content;
+                    if (diary.imageUrl) {
+                        document.getElementById("diaryImagePreview").style.display = 'block';
+                        document.getElementById("diaryImagePreview").src = diary.imageUrl;
+                    } else {
+                        document.getElementById("diaryImagePreview").style.display = 'none';
+                    }
+
+                    const completedTasksList = document.getElementById("completedDiaryTasksList");
+                    completedTasksList.innerHTML = '';
+                    if (diary.completedTasks && diary.completedTasks.length > 0) {
+                        diary.completedTasks.forEach(task => {
+                            const li = document.createElement("li");
+                            li.textContent = task.title;
+                            completedTasksList.appendChild(li);
+                        });
+                    } else {
+                        completedTasksList.innerHTML = '<li>Không có task nào hoàn thành.</li>';
+                    }
+
+                    const modalDiary = new bootstrap.Modal(document.getElementById("modalDiary"));
+                    modalDiary.show();
+                })
+                .catch(error => {
+                    console.error('Lỗi khi lấy dữ liệu nhật ký:', error);
+                    alert('Không thể lấy dữ liệu nhật ký. Do phiên đăng nhập hết hạn! Mời đăng nhập lại');
+                });
+        };
+
+        // Navigation buttons
+        document.getElementById('prevDayBtn').addEventListener('click', function() {
+            if (!selectedDate) return;
+            const currentDate = new Date(selectedDate);
+            currentDate.setDate(currentDate.getDate() - 1);
+            const newDateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+            selectedDate = newDateStr;
+            fetchCalendarData(newDateStr);
+        });
+
+        document.getElementById('nextDayBtn').addEventListener('click', function() {
+            if (!selectedDate) return;
+            const currentDate = new Date(selectedDate);
+            currentDate.setDate(currentDate.getDate() + 1);
+            const newDateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+            selectedDate = newDateStr;
+            fetchCalendarData(newDateStr);
+        });
+
+    });
+</script>
+</body>
+</html>

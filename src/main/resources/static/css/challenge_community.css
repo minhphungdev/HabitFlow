@@ -1,0 +1,571 @@
+:root {
+    --sidebar-width: 250px;
+    --sidebar-collapsed-width: 70px;
+    --primary-color: #f7b924;
+    --primary-hover: #e5a91f;
+    --dark-bg: #1a1a1a;
+    --light-bg: #ffffff;
+    --sidebar-bg: #f2f2f2;
+    --sidebar-color: #333;
+    --progress-bar-height: 8px;
+    --yellow-color: #ffcc00;
+    --green-color: #00b25a;
+    --red-color: #ff3860;
+    --blue-color: #3298dc;
+    --gray-bg: #f2f2f2;
+    --card-radius: 35px;
+    --task-radius: 8px;
+    --background-linear: linear-gradient(135deg, #2e54ff 0%, #764ba2 100%);
+}
+
+body {
+    min-height: 100vh;
+    overflow: hidden;
+    background-color: #fff;
+    font-family: "Nunito", sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Main content area */
+#content {
+    margin-left: var(--sidebar-width);
+    transition: all 0.3s;
+    min-height: 100vh;
+    padding: 0;
+}
+
+#content.expanded {
+    margin-left: var(--sidebar-collapsed-width);
+}
+
+/* Header styles */
+.app-header {
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+    padding: 20px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+.page-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-left: 15px;
+    color: #333;
+}
+
+.share-challenge-btn {
+    background: var(--background-linear);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 500;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.2s;
+    position: fixed;
+    right: 20px;
+    top: 100px
+}
+
+.share-challenge-btn:hover {
+    transform: translateY(-2px);
+    color: white;
+}
+
+/* Search bar */
+.search-container {
+    padding: 15px;
+}
+
+.search-bar {
+    position: relative;
+    width: 25%;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 15px;
+    padding-right: 40px;
+    border: none;
+    border-radius: 20px;
+    background-color: #f2f2f2;
+}
+
+.search-button {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+/* Content area */
+.content-area {
+    padding: 30px;
+    width: 100%;
+    margin: 0 auto;
+    overflow-y: auto;
+    height: 100vh;
+}
+#communityPosts{
+    margin: 40px;
+    width: 50%;
+
+}
+.content-area::-webkit-scrollbar {
+    width: 8px;
+}
+
+.content-area::-webkit-scrollbar-thumb {
+    background-color: #d3d3d3;
+    border-radius: 4px;
+}
+/* Community post cards */
+.community-post {
+    background: var(--background-linear);
+    border-radius: var(--card-radius);
+    padding: 25px;
+    margin-bottom: 25px;
+    color: white;
+    position: relative;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.community-post:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.u-avatar {
+    width: 30px;
+    height: 30px;
+    background-color: var(--gray-bg);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-right: 15px;
+}
+
+.user-info {
+    flex: 1;
+}
+
+.username {
+    font-weight: 600;
+    margin-bottom: 2px;
+    font-size: 1rem;
+}
+
+.post-time {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.challenge-title {
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.challenge-description {
+    font-size: 0.95rem;
+    opacity: 0.9;
+    margin-bottom: 15px;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.challenge-duration {
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+}
+
+.participants-badge {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #fac600;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: bolder;
+    display: inline-block;
+    backdrop-filter: blur(10px);
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+    width: 50%;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+/*Modal challenge*/
+.header-style{
+    background: #4900F2;
+    border: none;
+    border-radius: 0px 0px 50px 50px;
+    box-shadow: 0px 6px 8px 0px #a8a8a8;
+}
+.challenge-modal-descrip{
+    background-color: #5ca3ff4f;
+    border: none;
+    width: 80%;
+    color: #a0a0a0;;
+}
+.challenge-modal-descrip::-webkit-scrollbar{
+    width: 6px;
+}
+.challenge-modal-descrip::-webkit-scrollbar-thumb{
+    background-color: #cccccc;
+    border-radius: 4px;
+}
+
+.challenge-modal-descrip
+
+.participants{
+    background-color: #5e00ffcf;
+    border-radius: 10px;
+}
+
+/*calendar*/
+.calendar {
+    background-color: #a8a8a8;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    width: 90%;
+}
+
+.calendar__header {
+    padding: 15px 20px;
+    border-radius: 10px 10px 0px 0px;
+}
+
+.calendar__month-year {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.calendar__nav {
+    display: flex;
+    gap: 10px;
+}
+
+.calendar__nav-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #333;
+}
+
+.calendar__opts {
+    background-color: #fff;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 15px;
+    padding: 15px 20px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+select {
+    background-color: #f3f4f6;
+    padding: 10px 30px 10px 15px;
+    border-radius: 20px;
+    border: none;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.9rem;
+    -webkit-appearance: none;
+}
+
+.calendar__body {
+    background-color: #fff;
+}
+
+.calendar__days {
+    padding: 10px 20px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.calendar__days > div {
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #888;
+    padding: 5px 0;
+}
+
+.calendar__dates {
+    padding: 0 20px 15px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.calendar__date {
+    text-align: center;
+    height: 20px;
+    line-height: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    position: relative;
+    border-radius: 20%;
+    margin: 2px;
+}
+
+.calendar__date:not(.calendar__date--grey):hover {
+    background-color: #f0f0f0;
+}
+
+.calendar__date--grey {
+    color: #ccc;
+    cursor: not-allowed;
+}
+
+.calendar__date--completed {
+    background-color: #52F724FF;
+    color: #fff;
+}
+
+/*share challenge*/
+.shareable-challenge-card {
+    background: linear-gradient(135deg, #000f50 0%, #764ba2 100%);
+    border-radius: 15px;
+    padding: 20px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 3px solid transparent;
+}
+#shareableChallenges{
+    height: calc(5 * 148px);
+    overflow-y: auto;
+}
+#shareableChallenges::-webkit-scrollbar {
+    width: 8px;
+}
+
+#shareableChallenges::-webkit-scrollbar-thumb {
+    background-color: #d3d3d3;
+    border-radius: 4px;
+}
+
+.shareable-challenge-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0px 6px 5px 0px rgb(41 80 255 / 73%);
+}
+
+.shareable-challenge-card.selected {
+    border-color: #fff;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+.challenge-card-content .challenge-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.challenge-card-content .challenge-desc {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin-bottom: 10px;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.challenge-card-content .challenge-duration {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/*#challengeDetailShareModal{*/
+/*    background-color: rgba(176, 176, 176, 0.45);*/
+/*}*/
+
+.modal-dialog-left{
+    position: absolute;
+    left:5%;
+    width: 30%;
+}
+
+#rankingBoard {
+    right: 10px;
+    top: 300px;
+    width: 40%;
+    height: calc(12*50.5px);
+    margin-top: 30px;
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.table {
+    width: 100%;
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    /*height: calc(10*50px);*/
+}
+
+
+.table thead th {
+    background-color: #4329e8;
+    color: #ffffff;
+    font-weight: bold;
+    text-align: center;
+    padding: 15px 12px;
+    border-bottom: none;
+}
+
+
+.table thead th:first-child {
+    border-top-left-radius: 10px;
+}
+.table thead th:last-child {
+    border-top-right-radius: 10px;
+}
+
+.table tbody tr {
+    transition: background-color 0.3s ease;
+}
+
+.table tbody tr th,
+.table tbody tr td {
+    padding: 12px;
+    vertical-align: middle;
+    text-align: center;
+    border-top: 1px solid #dee2e6;
+    height: 50px;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(106, 13, 173, 0.05);
+}
+
+.table tbody tr:hover {
+    background-color: rgba(106, 13, 173, 0.15);
+}
+
+.table tbody tr:last-child th,
+.table-striped tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.table tbody tr th:first-child {
+    font-weight: bold;
+    color: #333333; /* Màu chữ đậm cho STT */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #sidebar {
+        margin-left: calc(var(--sidebar-width) * -1);
+    }
+
+    #sidebar.active {
+        margin-left: 0;
+    }
+
+    #content {
+        margin-left: 0;
+    }
+
+    #content.expanded {
+        margin-left: 0;
+    }
+
+    .content-area {
+        padding: 20px 15px;
+
+    }
+
+    .app-header {
+        padding: 15px 20px;
+    }
+
+    .page-title {
+        font-size: 1.3rem;
+    }
+
+    .share-challenge-btn {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+    #rankingBoard {
+        padding: 15px;
+    }
+    .table thead th,
+    .table tbody tr th,
+    .table tbody tr td {
+        padding: 10px 8px; /* Giảm padding trên màn hình nhỏ */
+        font-size: 0.9em; /* Giảm kích thước font */
+    }
+}
+
+/* Modal customizations */
+.modal-content {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+/* Loading animation */
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+}
+
+.spinner-border {
+    color: #667eea;
+}
+
+.challengeOverviewDescription{
+    height: 100px;
+    overflow-y: auto;
+}
+
+.challengeOverviewDescription::-webkit-scrollbar{
+    width: 6px;
+}
+.challengeOverviewDescription::-webkit-scrollbar-thumb{
+    background-color: #cccccc;
+    border-radius: 4px;
+}
+

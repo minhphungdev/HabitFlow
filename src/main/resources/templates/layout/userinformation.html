@@ -1,0 +1,25 @@
+<div class="user-profile row align-items-center" th:fragment="user(user,userAchievement)">
+    <!-- Avatar và Cấp độ -->
+    <div class="user-avatar">
+        <img th:src="${user.avatar==null?'/images/user_ava.png':user.avatar}"/>
+    </div>
+
+    <!-- Thông tin chi tiết -->
+    <div class="col-4">
+        <div class="d-flex">
+            <div class="achievement-icon me-2" th:style="'background-color: ' + ${userAchievement.color}">
+                <i th:class="${userAchievement.icon}"></i>
+            </div>
+            <strong class="align-content-center">
+                <span class="mb-1">Danh Hiệu: <span th:text="${userAchievement.title}"></span></span>
+            </strong>
+        </div>
+        <p>Người dùng: <span th:text="${user.userName}"></span></p>
+    </div>
+
+    <!-- Coin -->
+    <div th:style="'width:20px'" class="d-flex flex-column align-items-center col-6 ms-auto">
+        <img src="/images/coin-icon.png" alt="coin" class="user-coin">
+        <span th:text="${user.coins}">0</span>
+    </div>
+</div>

@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Thói Quen</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="/css/overview.css">
+    <link rel="stylesheet" href="/css/layout.css">
+
+</head>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<body>
+<div th:replace="layout/toastnotification.html :: toast(failed=${failed}, success=${success})"></div>
+
+<div th:replace="layout/toastresponse.html :: toastresponse"></div>
+
+<!-- Include sidebar from existing template -->
+<div th:replace="layout/sidebar.html"></div>
+
+<!--check login-->
+<div th:replace="layout/checklogin.html"></div>
+
+<!-- Main Content -->
+<div id="content">
+    <div class="row mx-0">
+        <div class="col-md-8 head-content">
+            <!-- Include user information from existing template -->
+            <div th:replace="layout/userinformation.html :: user(user=${user},userAchievement=${userAchievement})"></div>
+            <!-- Progress Section -->
+            <div class="progress-section" th:if="${userChallenge!=null}">
+                <div class="progress-title">Tiến độ</div>
+                <div class="progress-row">
+                    <div class="d-flex justify-content-between">
+                        <div class="progress-label">Chuỗi: <span th:text="${userChallenge.streak}">5</span></div>
+                        <div class="progress-value" th:text="'Chuỗi cao nhất:' + ${userChallenge.bestStreak}"> 15</div>
+                    </div>
+                    <div class="progress-bar-container mb-3">
+                        <div class="progress-bar-fill" th:style="'width: ' + ${userChallenge.bestStreak==0?'0':(100 -(userChallenge.streak * 100 / userChallenge.bestStreak))} + '%'"></div>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <div class="progress-label">Thực hiện/Tổng thói quen trong thử thách</div>
+                        <div class="progress-value" th:text="${userChallenge.totalCompletedTasks} + '/' + ${userChallenge.totalExpectedTasks}">5/7</div>
+                    </div>
+
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" th:style="'width: ' + (100 - (${userChallenge.totalCompletedTasks} * 100 / ${userChallenge.totalExpectedTasks})) + '%'"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-md-4 d-flex flex-column justify-content-center">
+            <!-- Challenge Card -->
+            <div class="challenge-card" id="challengeCard">
+                <div th:if="${userChallenge!=null}">
+                    <div class="challenge-title" th:text="'Thử thách: '+${userChallenge.challenge.title}">Thử thách</div>
+                    <div class="challenge-subtitle" th:text="${userChallenge.challenge.description}">Lối Sống</div>
+                    <div class="challenge-progress" th:text="'Ngày ' +${userChallenge.daysSinceStart}+ '/' +${userChallenge.challenge.day}">Ngày 24/30</div>
+                    <div class="challenge-streak">
+                        <span th:text="'Chuỗi: ' +${userChallenge.streak}+' ngày liên tiếp'">Chuỗi: 5 ngày liên tiếp</span>
+                        <i class="fas fa-fire"></i>
+                    </div>
+                </div>
+                <div th:if="${userChallenge==null}">
+                    <div class="challenge-title">Tất cả thử thách</div>
+                </div>
+
+                <!-- Dropdown -->
+                <div class="challenge-dropdown" id="challengeDropdown">
+                    <div class="dropdown-header">
+                        Danh sách thử thách của bạn
+                    </div>
+                    <div class="dropdown-content" id="dropdownContent">
+                        <a href="/overview" class="dropdown-item">
+                            <div class="item-title" >Tất cả</div>
+                        </a>
+
+                        <a th:href="'/overview/detail?challenge='+${challenge.getChallenge().getChallengeId()}" class="dropdown-item" th:each="challenge:${userChallenges}">
+                            <div class="item-title" th:text="${challenge.challenge.title}"></div>
+                            <div class="item-stats">
+                                <div class="item-progress" th:text="${challenge.daysSinceStart}+ '/' +${challenge.challenge.day}+ ' Ngày'"></div>
+                                <div class="item-streak" >
+                                    <span th:text="'Streak: ' +${challenge.streak}"></span>
+                                    <i class="fas fa-fire"></i>
+                                </div>
+
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-container d-flex justify-content-center">
+        <div class="search-bar">
+            <input type="text" class="search-input" placeholder="Search">
+            <button class="search-button">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Tasks Container -->
+    <div class="tasks-container">
+        <!-- Habits Column -->
+        <div class="task-column">
+            <div class="column-header">Thói quen</div>
+            <button class="add-task-button" onclick="openHabitCreateModal()">
+                <i class="fas fa-plus"></i> Thêm công việc
+            </button>
+            <div class="tasks-contain">
+                <!-- Habit item -->
+                <div th:each="habit : ${userHabits}"
+                     th:class="${habit.getHabit().getType().name() == 'POSITIVE'} ? 'task-item green-indicator':(${habit.getHabit().getType().name() == 'NEGATIVE'} ? 'task-item red-indicator':'task-item')">
+                    <div class="btn-plus-container" th:if="${habit.getHabit().getType().name()=='BOTH'|| habit.getHabit().getType().name() == 'POSITIVE'}">
+                        <button class="action-button plus-button"
+                                th:onclick="|updateHabitCount('positive',${habit.getHabit().getHabitId()})|">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+
+                    <div th:id="habit-task-content-+${habit.getHabit().getHabitId()}" th:class="  ${habit.isCompleted()} ? 'task-content completed' : 'task-content'" th:style="${habit.habit.type.name() == 'BOTH'? 'width:63%' :''}">
+                        <button class="task-detail" th:onclick="|openHabitUpdateModal(${habit.getHabit().getHabitId()})|">
+                            <div class="fw-bold mb-1"  th:text="${habit.getHabit().getTitle()}">Uống nước</div>
+                            <div class="task-description" th:text="${habit.getHabit().getDescription()}">Uống nước mỗi 1 giờ</div>
+                        </button>
+                        <div class="task-count d-flex justify-content-end"><span th:id="habit-+${habit.getHabit().getHabitId()}" th:text="'+'+${habit.positiveCount}+'|'+${habit.negativeCount}+'-'">+11 | 2-</span></div>
+                    </div>
+                    <div class="btn-minus-container" th:if="${habit.getHabit().getType().name()=='BOTH'|| habit.getHabit().getType().name() == 'NEGATIVE'}">
+                        <button class="action-button minus-button"
+                                th:onclick="|updateHabitCount('negative',${habit.getHabit().getHabitId()})|">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+            <div class="column-footer" th:if="${userHabits.size()<4}">
+                Duy trì các thói quen tốt và cùng loại bỏ thói quen xấu
+            </div>
+        </div>
+
+        <!-- Modal Habit-->
+        <div class="modal fade" id="modalHabit" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form id="habitForm" th:action="@{/habits/save}" method="post" th:object="${newHabit}">
+                        <div class="modal-header text-bg-warning p-4">
+                            <div class="w-100 ">
+                                <h4 id="habitContent" class="fw-bold mb-3">Tạo mới</h4>
+                                <input type="text" id="habitId" style="display: none" th:field="*{habitId}">
+                                <div class="mb-3" >
+                                    <label for="habitTitle" class="form-label">Tiêu đề <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="habitTitle" th:field="*{title}">
+                                    <div id="habitTitleError" class="text-danger mt-1" style="display: none;">Vui lòng nhập tiêu đề.</div>
+                                </div>
+                                <div class="mb-3" >
+                                    <label for="habitDescription" class="form-label">Ghi chú</label>
+                                    <textarea class="form-control" id="habitDescription" th:field="*{description}" rows="3" placeholder="Thêm ghi chú"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="mb-3">
+                                <label for="habitType" class="form-label">Loại</label>
+                                <select class="form-control" id="habitType" th:field="*{type}">
+                                    <option th:each="type : ${newHabit.habitTypesOption}" th:value="${type}" th:text="${type}">Tích cực</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="habitDifficulty" class="form-label">Độ khó</label>
+                                <select class="form-control" id="habitDifficulty" th:field="*{difficulty}">
+                                    <option th:each="difficult : ${newHabit.habitDifficultiesOption}" th:value="${difficult}" th:text="${difficult}">Dễ</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="habitTarget" class="form-label">Mục tiêu</label>
+                                <input type="number" class="form-control" id="habitTarget" th:field="*{targetCount}">
+                                <div id="habitTargetError" class="text-danger mt-1" style="display: none;">Vui lòng chọn mục tiêu >1</div>
+                            </div>
+
+                            <div class="mb-3" id="habitCreateChallengeField">
+                                <label for="habitCreateChallenge"  class="form-label">Thử thách</label>
+                                <select class="form-control"  id="habitCreateChallenge" th:field="*{challengeId}">
+                                    <option th:value="${null}" selected>Không có</option>
+                                    <option th:each="challenge : ${userChallengeOwner}" th:value="${challenge.getChallenge().getChallengeId()}" th:text="${challenge.getChallenge().getTitle()}"></option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3" id="habitUpdateChallengeField">
+                                <label for="habitUpdateChallenge"  class="form-label">Thử thách</label>
+                                <select class="form-control"  id="habitUpdateChallenge" th:field="*{challengeId}">
+                                    <option th:value="${null}" selected>Không có</option>
+                                    <option th:each="challenge : ${userChallenges}" th:value="${challenge.getChallenge().getChallengeId()}" th:text="${challenge.getChallenge().getTitle()}"></option>
+                                </select>
+                            </div>
+
+                            <div class="modal-footer d-flex justify-content-between">
+                                <div>
+                                    <button id="deleteHabitButton" style="display: none" type="button" class="btn btn-danger" data-bs-toggle="modal"
+                                            data-bs-target="#deleteHabitModal">Xóa</button>
+                                </div>
+                                <div>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                    <button type="submit" class="btn btn-primary">Lưu</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!--Modal Delete Habit-->
+        <div class="modal fade" id="deleteHabitModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">Xóa Thói quen</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body">
+                        Bạn có chắc chắn muốn xóa thói quen này? Lịch sử về thói quen cũng sẽ bị xóa!
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">Đóng</button>
+                        <a id="deleteHabit" class="btn btn-danger">Xóa</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dailies Column -->
+        <div class="task-column">
+            <div class="column-header">Hàng ngày</div>
+            <button class="add-task-button" onclick="openDailyCreateModal()">
+                <i class="fas fa-plus"></i> Thêm công việc
+            </button>
+            <div class="tasks-contain">
+                <div class="tasks-contain">
+                    <!-- Daily task item -->
+                    <div th:each="userDaily : ${userDailies}" th:class="${userDaily.isEnabled()}? 'checkbox-item':'checkbox-item checkbox-disable'">
+                        <div class="daily-checkbox-contain">
+                            <button class="daily-checkbox"
+                                    th:id="daily-checkbox-+${userDaily.getDaily().getDailyId()}"
+                                    th:onclick="|dailyCheckedTask(${userDaily.getDaily().getDailyId()})|"
+                                    th:disabled="${userDaily.isEnabled()}?false:true">
+                                <i th:if="${userDaily.isCompleted}" class="fas fa-check"></i>
+                            </button>
+                        </div>
+                        <div th:class="${userDaily.isCompleted}?'task-content completed':'task-content'" th:id="daily-task-+${userDaily.getDaily().getDailyId()}">
+                            <button class="task-detail" th:onclick="|openDailyUpdateModal(${userDaily.getDaily().getDailyId()})|">
+                                <div class="fw-bold mb-1 daily-title" th:text="${userDaily.getDaily().getTitle()}">Ngủ trước 10 giờ</div>
+                                <div class="task-description" th:text="${userDaily.getDaily().getDescription()}">Uống nước mỗi 1 giờ</div>
+                            </button>
+                            <div class="w-100 d-flex justify-content-end">
+                                <i class="fa-solid fa-fire-flame-curved"></i>
+                                <span th:id="daily-streak-+${userDaily.getDaily().getDailyId()}" class="task-count"
+                                      th:text="${userDaily.getStreak()}">11</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="column-footer" th:if="${userDailies.size()<4}">
+                Hãy cố gắng hoàn thành công việc đã đặt ra của ngày hôm nay
+            </div>
+        </div>
+
+        <!--Modal Daily-->
+        <div class="modal fade" id="modalDaily" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form id="dailyForm" th:action="@{dailies/create}" method="post" th:object="${newDaily}">
+                        <div class="modal-header text-bg-warning p-4">
+                            <div class="w-100">
+                                <h4 id="DailyModalTitle" class="fw-bold mb-3">Tạo mới thói quen hàng ngày</h4>
+                                <input type="hidden" id="dailyId" th:field="*{dailyId}" />
+                                <div class="mb-3">
+                                    <label for="dailyTitle" class="form-label">Tiêu đề <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="dailyTitle" th:field="*{title}">
+                                    <div id="dailyTitleError" class="text-danger mt-1" style="display: none;">Vui lòng nhập tiêu đề.</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dailyDes" class="form-label">Ghi chú</label>
+                                    <textarea class="form-control" id="dailyDes" th:field="*{description}" rows="3" placeholder="Thêm ghi chú"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-body p-4">
+                            <!-- Difficulty -->
+                            <div class="mb-3">
+                                <label for="dailyDifficulty" class="form-label">Độ khó</label>
+                                <select class="form-control" id="dailyDifficulty" th:field="*{difficulty}">
+                                    <option th:each="diff : ${newDaily.difficultyOptions}"
+                                            th:value="${diff}"
+                                            th:text="${diff}"></option>
+                                </select>
+                            </div>
+
+                            <!-- Repeat Frequency -->
+                            <div class="mb-3">
+                                <label for="repeatFrequency" class="form-label">Tần suất lặp lại</label>
+                                <select class="form-control" id="repeatFrequency" th:field="*{repeatFrequency}">
+                                    <option th:each="freq : ${newDaily.repeatFrequencyOptions}"
+                                            th:value="${freq}"
+                                            th:text="${freq}"></option>
+                                </select>
+                            </div>
+
+                            <!-- Repeat Every -->
+                            <div class="mb-3" id="repeatEverySection" style="display: none">
+                                <label for="repeatEvery" class="form-label">Lặp lại sau mỗi</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="repeatEvery" th:field="*{repeatEvery}" min="1" />
+                                    <span class="input-group-text" id="repeatEveryUnit">Days</span>
+                                </div>
+                                <div id="repeatEveryError" class="text-danger mt-1" style="display: none;">Vui lòng nhập giá trị lớn hơn 0.</div>
+                            </div>
+
+                            <!-- Repeat Days (Weekly) -->
+                            <div class="mb-3" id="repeatDaysSection" style="display: none;">
+                                <label class="form-label">Lặp lại vào</label>
+                                <div style="width: 100%">
+                                    <div th:each="day : ${newDaily.dayOfWeekOptions}" class="form-check form-check-inline" style="width: 20%">
+                                        <input class="form-check-input" type="checkbox" th:field="*{repeatDays}" th:value="${day}" th:id="'day-' + ${day}">
+                                        <label class="form-check-label" th:for="'day-' + ${day}" th:text="${day}"></label>
+                                    </div>
+                                </div>
+                                <div id="repeatDaysError" class="text-danger mt-1" style="display: none;">Vui lòng chọn ít nhất 1 ngày.</div>
+                            </div>
+
+                            <!-- Repeat Month Days (Monthly) -->
+                            <div class="mb-3" id="repeatMonthDaysSection" style="display: none;">
+                                <label class="form-label">Lặp lại vào ngày</label>
+                                <div class="d-flex flex-wrap gap-2" style="max-height: 150px; width: 100%; overflow-y: auto;">
+                                    <div th:each="day : ${#numbers.sequence(1, 31)}" class="form-check form-check-inline" style="width: 14%">
+                                        <input class="form-check-input" type="checkbox" th:field="*{repeatMonthDays}" th:value="${day}" th:id="'month-day-' + ${day}" />
+                                        <label class="form-check-label" th:for="'month-day-' + ${day}" th:text="${day}"></label>
+                                    </div>
+                                </div>
+                                <div id="repeatMonthDaysError" class="text-danger mt-1" style="display: none;">Vui lòng chọn ít nhất 1 ngày trong tháng.</div>
+                            </div>
+
+                            <div class="mb-3" id="dailyCreateChallengeField">
+                                <label for="dailCreateChallenge" class="form-label">Thử thách</label>
+                                <select class="form-control" id="dailCreateChallenge" th:field="*{challengeId}">
+                                    <option th:value="${null}" selected>Không có</option>
+                                    <option th:each="challenge : ${userChallengeOwner}"
+                                            th:value="${challenge.getChallenge().getChallengeId()}"
+                                            th:text="${challenge.getChallenge().getTitle()}"></option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3" id="dailyUpdateChallengeField">
+                                <label for="dailyUpdateChallenge" class="form-label">Thử thách</label>
+                                <select class="form-control" id="dailyUpdateChallenge" th:field="*{challengeId}">
+                                    <option th:value="${null}" selected>Không có</option>
+                                    <option th:each="challenge : ${userChallenges}"
+                                            th:value="${challenge.getChallenge().getChallengeId()}"
+                                            th:text="${challenge.getChallenge().getTitle()}"></option>
+                                </select>
+                            </div>
+
+                            <div class="modal-footer d-flex justify-content-between">
+                                <div>
+                                    <button id="deleteDailyButton" style="display: none" type="button" class="btn btn-danger" data-bs-toggle="modal"
+                                            data-bs-target="#deleteDailyModal">Xóa</button>
+                                </div>
+                                <div>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                    <button type="submit" class="btn btn-primary">Lưu</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!--Modal Delete Daily-->
+        <div class="modal fade" id="deleteDailyModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" >Xóa Thói quen hằng ngày</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body">
+                        Bạn có chắc chắn muốn xóa thói quen này? Lịch sử về thói quen hàng ngày cũng sẽ bị xóa!
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">Đóng</button>
+                        <a id="deleteDaily" class="btn btn-danger">Xóa</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Todos Column -->
+        <div class="task-column">
+            <div class="column-header">Việc cần làm</div>
+            <button class="add-task-button" onclick="openTodoCreateModal()">
+                <i class="fas fa-plus"></i> Thêm công việc
+            </button>
+            <div class="tasks-contain">
+                <!-- Todo item -->
+                <div th:each="todo : ${activeTodos}" class="todo-card">
+                    <div class="todo-color-bar yellow">
+                        <button class="todo-checkbox"
+                                th:id="todo-checkbox-+${todo.todoId}"
+                                th:onclick="|updateTodotaskCompletion(${todo.todoId},null)|">
+                            <i class="fas fa-check" th:if="${todo.isCompleted}"></i>
+                        </button>
+                    </div>
+                    <div style="height: auto;" th:class="${todo.isCompleted}?'task-content completed':'task-content'" th:id="todo-task-+${todo.todoId}">
+                        <div class="todo-card-header">
+                            <button class="task-detail" th:onclick="|openTodoUpdateModal(${todo.todoId})|">
+                                <div class="fw-bold mb-1 todo-title" th:text="${todo.title}">Dọn nhà</div>
+                                <div class="task-description" th:text="${todo.description}">Dọn nhà</div>
+                            </button>
+                        </div>
+                        <div class="todo-progress" th:if="${!todo.todoSubTasks.isEmpty()}">
+                            <i class="fas fa-tasks"></i>
+                            <span class="ms-2" th:text="${todo.todoSubTasks.size()}">4</span>
+                            <button class="todo-dropdown-toggle" th:attr="data-bs-target='#subtasksList-' + ${todo.todoId}" data-bs-toggle="collapse" aria-expanded="false">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                        <div th:id="'subtasksList-' + ${todo.todoId}" class="collapse">
+                            <div class="todo-subtasks mt-2">
+                                <div class="todo-subtask" th:each="subtask : ${todo.todoSubTasks}">
+                                    <input type="checkbox" th:id="'subtask-' + ${subtask.todoSubtaskId}" th:checked="${subtask.isCompleted}" th:onclick="|updateTodotaskCompletion(${todo.todoId}, ${subtask.todoSubtaskId})|">
+                                    <label th:for="'subtask-' + ${subtask.todoSubtaskId}" th:text="${subtask.title}">123</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Todo -->
+        <div class="modal fade" id="modalTodo" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form id="todoForm" th:action="@{/todos/save}" method="post" th:object="${newTodo}">
+                        <div class="modal-header text-bg-warning p-4">
+                            <div class="w-100">
+                                <h4 id="todoContent" class="fw-bold mb-3">Tạo mới</h4>
+                                <input type="text" id="todoId" style="display: none" th:field="*{todoId}">
+                                <div class="mb-3">
+                                    <label for="todoTitle" class="form-label">Tiêu đề <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="todoTitle" th:field="*{title}">
+                                    <div id="todoTitleError" class="text-danger mt-1" style="display: none;">Vui lòng nhập tiêu đề.</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="todoDescription" class="form-label">Ghi chú</label>
+                                    <textarea class="form-control" id="todoDescription" th:field="*{description}" rows="3" placeholder="Thêm ghi chú"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="mb-3">
+                                <label for="todoDifficulty" class="form-label">Độ khó</label>
+                                <select class="form-control" id="todoDifficulty" th:field="*{difficulty}">
+                                    <option th:each="difficult : ${newTodo.todoDifficultOption}" th:value="${difficult}" th:text="${difficult}">Dễ</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="executionDate" class="form-label">Thực hiện trước</label>
+                                <input type="date" class="form-control" id="executionDate" th:field="*{executionDate}">
+                            </div>
+
+                            <!-- Subtasks -->
+                            <div class="mb-3">
+                                <label class="form-label">Checklist</label>
+                                <div id="subtasksContainer">
+                                    
+                                </div>
+                                <button type="button" class="btn btn-outline-primary mt-2" onclick="addSubtaskField()">Thêm Subtask</button>
+                            </div>
+
+                            <div class="modal-footer d-flex justify-content-between">
+                                <div>
+                                    <button id="deleteTodoButton" style="display: none" type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteTodoModal">Xóa</button>
+                                </div>
+                                <div>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                    <button type="submit" class="btn btn-primary">Lưu</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Todo Confirmation Modal -->
+        <div class="modal fade" id="deleteTodoModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Xác nhận xóa</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        Bạn có chắc chắn muốn xóa công việc này?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <a id="deleteTodo" class="btn btn-danger" href="#">Xóa</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diary Column -->
+        <div class="task-column">
+            <div class="column-header">Viết Nhật Ký</div>
+            <button class="add-task-button" onclick="openDiaryCreateModal()">
+                <i class="fas fa-plus"></i> Thêm Nhật Ký
+            </button>
+            <div class="tasks-contain">
+                <div th:each="diary : ${diaries}" class="journal-day" >
+                    <button class="diary-task" th:onclick="|openDiaryUpdateModal(${diary.diaryId})|">
+                        <span th:text="'Ngày ' + ${#temporals.format(diary.date, 'd-MM-YYYY')}"></span>
+                    </button>
+                </div>
+            </div>
+            <div th:if="${(diaries.size() >= 6 ? false : true)}" class="column-footer">
+                Hãy ghi lại những thay đổi của bạn hôm nay
+            </div>
+        </div>
+
+        <!-- Modal Diary -->
+        <div class="modal fade" id="modalDiary" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form id="diaryForm" th:action="@{/diaries/save}" method="post" th:object="${newDiary}" enctype="multipart/form-data">
+                        <div class="modal-header text-bg-warning p-4">
+                            <div class="w-100">
+                                <h4 id="diaryContent" class="fw-bold mb-3">Tạo mới</h4>
+                                <input type="text" id="diaryId" style="display: none" th:field="*{diaryId}">
+                                <div class="mb-3">
+                                    <label for="diaryContentInput" class="form-label">Nội dung <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="diaryContentInput" th:field="*{content}" rows="3" placeholder="Viết nhật ký của bạn"></textarea>
+                                    <div id="diaryContentError" class="text-danger mt-1" style="display: none;">Vui lòng nhập nội dung.</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="diaryImage" class="form-label">Tải ảnh lên</label>
+                                    <input type="file" class="form-control" id="diaryImage" name="image" accept="image/*">
+                                    <div class="d-flex justify-content-center w-100">
+                                        <img id="diaryImagePreview" class="img-fluid mt-1" style="max-width: 300px; max-height: 400px; display: none;" />
+                                    </div>
+                                </div>
+                                <div class="mb-3" >
+                                    <label for="diaryChallenge"  class="form-label">Viết nhật ký cho thử thách</label>
+                                    <select class="form-control"  id="diaryChallenge" th:field="*{challengeId}">
+                                        <option th:value="${null}" selected>Không có</option>
+                                        <option th:each="challenge : ${userChallenges}" th:value="${challenge.getChallenge().getChallengeId()}" th:text="${challenge.getChallenge().getTitle()}"></option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="mb-3">
+                                <strong>Task đã hoàn thành:</strong>
+                                <ul id="completedTasksList">
+                                    <!-- Danh sách task sẽ được thêm động -->
+                                </ul>
+                                <button type="button" id="updateTasksButton" class="btn btn-primary btn-sm" onclick="updateDiaryTasks()">Cập nhật Task</button>
+                            </div>
+                            <div class="modal-footer d-flex justify-content-between">
+                                <div>
+                                    <button id="deleteDiaryButton" style="display: none" type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteDiaryModal">Xóa</button>
+                                </div>
+                                <div class="d-flex">
+                                    <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Hủy</button>
+                                    <button type="submit" id="saveDiaryButton" class="btn btn-primary">Lưu</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Diary Confirmation Modal -->
+        <div class="modal fade" id="deleteDiaryModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Xác nhận xóa</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        Bạn có chắc chắn muốn xóa nhật ký này?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <a id="deleteDiary" class="btn btn-danger" href="#">Xóa</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS and other scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function (){
+
+        const challengeCard = document.getElementById('challengeCard');
+        const challengeDropdown = document.getElementById('challengeDropdown');
+
+        // Toggle dropdown
+        challengeCard.addEventListener('click', function(e) {
+            e.stopPropagation();
+            toggleDropdown();
+        });
+
+        // Đóng dropdown khi click bên ngoài
+        document.addEventListener('click', function(e) {
+            if (!challengeCard.contains(e.target) && !challengeDropdown.contains(e.target)) {
+                closeDropdown();
+            }
+        });
+
+        function toggleDropdown() {
+            if (challengeDropdown.classList.contains('show')) {
+                closeDropdown();
+            } else {
+                openDropdown();
+            }
+        }
+
+        function openDropdown() {
+            challengeCard.classList.add('active');
+            challengeDropdown.classList.add('show');
+        }
+
+        function closeDropdown() {
+            challengeCard.classList.remove('active');
+            challengeDropdown.classList.remove('show');
+        }
+
+        let debounceTimeout;
+        const searchInput = document.querySelector('.search-input');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function () {
+                clearTimeout(debounceTimeout);
+                debounceTimeout = setTimeout(() => {
+                    const searchTerm = searchInput.value.toLowerCase();
+                    // Lọc habits
+                    const habitItems = document.querySelectorAll('.task-item');
+                    habitItems.forEach(function (item) {
+                        const habitTitleElem = item.querySelector('.habit-title');
+                        const habitTitle = habitTitleElem ? habitTitleElem.textContent.toLowerCase() : "";
+                        if (habitTitle.includes(searchTerm)) {
+                            item.style.display = '';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+
+                    // Lọc dailies
+                    const dailyItems = document.querySelectorAll('.checkbox-item');
+                    dailyItems.forEach(function (item) {
+                        const dailyTitleElem = item.querySelector('.daily-title');
+                        const dailyTitle = dailyTitleElem ? dailyTitleElem.textContent.toLowerCase() : "";
+                        if (dailyTitle.includes(searchTerm)) {
+                            item.style.display = '';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+
+                    // Lọc todos
+                    const todoItems = document.querySelectorAll('.todo-card');
+                    todoItems.forEach(function (item) {
+                        const todoTitleElem = item.querySelector('.todo-title');
+                        const todoTitle = todoTitleElem ? todoTitleElem.textContent.toLowerCase() : "";
+                        if (todoTitle.includes(searchTerm)) {
+                            item.style.display = '';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                }, 300);
+
+            });
+        }
+
+        const habitInputId = document.getElementById("habitId")
+        const habitTitle = document.getElementById("habitTitle")
+        const habitDescription = document.getElementById("habitDescription")
+        const habitDifficulty = document.getElementById("habitDifficulty")
+        const habitType = document.getElementById("habitType")
+        const habitTarget = document.getElementById("habitTarget")
+        const habitCreateChallenge = document.getElementById("habitCreateChallenge")
+        const habitUpdateChallenge = document.getElementById("habitUpdateChallenge")
+        const deleteHabitButton = document.getElementById("deleteHabitButton")
+        const deleteHabit = document.getElementById("deleteHabit")
+
+            //Open create habit modal
+        window.openHabitCreateModal = ()=>{
+            habitInputId.value=''
+            habitTitle.value='';
+            habitDescription.value='';
+            habitDifficulty.value='EASY';
+            habitType.value = 'BOTH';
+            habitTarget.value = 1;
+            habitCreateChallenge.value = '';
+
+            deleteHabitButton.style.display='none';
+
+            habitTitle.readOnly = false;
+            habitDescription.readOnly = false;
+            habitDifficulty.readOnly = false;
+            habitType.readOnly = false;
+            habitCreateChallenge.removeEventListener("mousedown",null);
+
+            habitCreateChallenge.disabled = false
+            habitUpdateChallenge.disabled = true
+            document.getElementById("habitCreateChallengeField").setAttribute("style","display: block")
+            document.getElementById("habitUpdateChallengeField").setAttribute("style","display: none")
+
+            const modalHabit = new bootstrap.Modal(document.getElementById("modalHabit"))
+            modalHabit.show()
+        }
+
+        //Open update habit modal
+        window.openHabitUpdateModal = (habitId) => {
+            fetch("/habits/"+habitId)
+                .then(response =>{
+                    if (response.url.includes('/login')) {
+                        window.location.href = '/login';
+                        return;
+                    }
+                    return response.json()})
+                .then(habit =>{
+                    console.log(habit)
+                    habitInputId.value=habit.habitId
+                    habitTitle.value=habit.title;
+                    habitDescription.value=habit.description;
+                    habitDifficulty.value=habit.difficulty;
+                    habitType.value = habit.type;
+                    habitTarget.value = habit.targetCount;
+
+                    deleteHabit.setAttribute("href","/habits/delete/"+habitId);
+
+                    if(habit.inChallenge){
+                        deleteHabitButton.style.display='none';
+                        habitCreateChallenge.disabled = true
+                        habitUpdateChallenge.disabled = false
+                        document.getElementById("habitCreateChallengeField").setAttribute("style","display: none")
+                        document.getElementById("habitUpdateChallengeField").setAttribute("style","display: block")
+                        habitUpdateChallenge.value = habit.challengeId === null ? '' : habit.challengeId;
+
+                        habitTitle.readOnly = true;
+                        habitDescription.readOnly = true;
+                        habitDifficulty.readOnly = true;
+                        habitType.readOnly = true;
+                        habitUpdateChallenge.addEventListener('mousedown', function(event) {event.preventDefault();});
+                    }else{
+                        deleteHabitButton.style.display='block';
+                        habitCreateChallenge.disabled = false
+                        habitUpdateChallenge.disabled = true
+                        document.getElementById("habitCreateChallengeField").setAttribute("style","display: block")
+                        document.getElementById("habitUpdateChallengeField").setAttribute("style","display: none")
+                        habitCreateChallenge.value = habit.challengeId === null ? '' : habit.challengeId;
+                    }
+
+                    const form = document.getElementById('habitForm');
+                    const modalTitle = document.getElementById('habitContent');
+                    form.action = '/habits/update';
+                    modalTitle.textContent = 'Chỉnh sửa';
+
+                    const modalHabit = new bootstrap.Modal(document.getElementById("modalHabit"))
+                    modalHabit.show()
+                })
+                .catch(error => {
+                    console.error('Lỗi khi lấy dữ liệu phần thưởng:', error);
+                    alert('Không thể lấy dữ liệu phần thưởng. Do phiên đăng nhập hết hạn! Mời đăng nhập lại');
+                });
+        }
+
+        //Model create & edit validation habit
+        const habitForm = document.getElementById("habitForm");
+        const habitTitleInput = document.getElementById("habitTitle");
+        const habitTitleError = document.getElementById("habitTitleError");
+
+        const habitTargetError = document.getElementById("habitTargetError")
+        habitForm.addEventListener("submit", (e) => {
+            let valid = true;
+            if (habitTitleInput.value.trim() === "") {
+                habitTitleError.style.display = "block";
+                valid = false;
+            }
+            if(habitTarget.value<1){
+                habitTargetError.style.display = "block"
+                valid = false
+            }
+            if (!valid) {
+                console.log("stop")
+                e.preventDefault();
+            }
+        });
+
+        //Positive Negative count
+        window.updateHabitCount = (type,habitId)=>{
+            fetch(`/habits/${habitId}/progress_count?type=${type}`)
+                .then(response=>{
+                    if(response.url.includes("/login")){
+                        window.location.href="/login"
+                        return;
+                    }
+                    return response.json()
+                })
+                .then(data =>{
+
+                    taskHabit = document.querySelector(`#habit-${habitId}`)
+                    taskComplete = document.querySelector(`#habit-task-content-${habitId}`)
+                    taskHabit.textContent  = `+${data.positiveCount}|${data.negativeCount}-`
+                    if(data.completed){
+                        taskComplete.classList.add("completed");
+                    }else {
+                        taskComplete.classList.remove("completed");
+                    }
+
+                    if (data.userCoinMessage != null) {
+                        showResponseToast(data.userCoinMessage, 'completeTask');
+                        let currentCoins = parseInt(document.querySelector(".user-coin").nextElementSibling.textContent);
+                        document.querySelector(".user-coin").nextElementSibling.textContent = currentCoins + data.coinEarned;
+                    }
+                })
+                .catch(error=>{
+                    console.error("Lỗi:", error);
+                    alert("Cập nhật thất bại! Phiên đăng nhập hết hạn mời đăng nhập lại!");
+                })
+        }
+
+        // Daily
+
+        const dailyInput = document.getElementById('dailyTitle');
+        const dailyDes = document.getElementById('dailyDes')
+        const dailyInputCreateChallenge = document.getElementById('dailCreateChallenge')
+        const dailyInputUpdateChallenge = document.getElementById('dailyUpdateChallenge')
+        const dailyDifficult = document.getElementById('dailyDifficulty')
+
+        const dailyInputId = document.getElementById('dailyId')
+        const dailyRepeatFrequency = document.getElementById('repeatFrequency')
+        const repeatEvery = document.getElementById('repeatEvery')
+        const deleteDailyButton = document.getElementById("deleteDailyButton")
+        const deleteDaily = document.getElementById("deleteDaily")
+        const repeatDaysSection = document.querySelectorAll('#repeatDaysSection input[type="checkbox"]')
+        const repeatMonthDaysSection = document.querySelectorAll('#repeatMonthDaysSection input[type="checkbox"]')
+
+        window.openDailyCreateModal= ()=>{
+            dailyInputId.value = '';
+            dailyInput.value = '';
+            dailyDes.value = '';
+            dailyDifficult.value = 'EASY';
+            dailyRepeatFrequency.value = 'DAILY';
+            toggleRepeatOptions();
+            repeatEvery.value = 1;
+            deleteDailyButton.style.display='none'
+
+            repeatDaysSection.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+
+            repeatMonthDaysSection.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+
+            dailyInputCreateChallenge.value = '';
+
+            dailyInput.readOnly = false
+            dailyDes.readOnly = false
+            dailyInputCreateChallenge.removeEventListener("mousedown",null);
+            dailyDifficult.readOnly = false
+
+            // mục đích disable để tránh lấy giá trị của input còn lại
+            dailyInputCreateChallenge.disabled = false
+            dailyInputUpdateChallenge.disabled = true
+            document.getElementById("dailyUpdateChallengeField").setAttribute("style", "display: none;");
+            document.getElementById("dailyCreateChallengeField").setAttribute("style", "display: block;");
+
+            const modal = new bootstrap.Modal(document.getElementById('modalDaily'));
+            modal.show();
+        }
+
+        window.openDailyUpdateModal = function(dailyId) {
+            fetch(`/dailies/update/${dailyId}`)
+                .then(response =>{
+                    if (response.url.includes("/login")) {
+                        window.location.href = "/login";
+                        return;
+                    }
+                    return response.json()})
+                .then(daily => {
+                    console.log(daily)
+                    dailyInputId.value = daily.dailyId || '';
+                    dailyInput.value = daily.title || '';
+                    dailyDes.value = daily.description || '';
+                    dailyDifficult.value = daily.difficulty || '';
+                    dailyRepeatFrequency.value = daily.repeatFrequency || 'DAILY';
+                    toggleRepeatOptions();
+                    repeatEvery.value = daily.repeatEvery || 1;
+
+                    if(daily.inChallenge){
+                        deleteDailyButton.style.display='none'
+                        dailyInputCreateChallenge.disabled = true
+                        dailyInputUpdateChallenge.disabled = false
+                        document.getElementById("dailyCreateChallengeField").setAttribute("style", "display: none;");
+                        document.getElementById("dailyUpdateChallengeField").setAttribute("style", "display: block;");
+                        dailyInputUpdateChallenge.value = daily.challengeId || '';
+                        dailyInputUpdateChallenge.textContent = daily.challengeTitle;
+                    }else{
+                        deleteDailyButton.style.display='block'
+                        dailyInputCreateChallenge.disabled = false
+                        dailyInputUpdateChallenge.disabled = true
+                        document.getElementById("dailyUpdateChallengeField").setAttribute("style", "display: none;");
+                        document.getElementById("dailyCreateChallengeField").setAttribute("style", "display: block;");
+                        dailyInputCreateChallenge.value = daily.challengeId || '';
+                        dailyInputUpdateChallenge.textContent = daily.challengeTitle;
+                    }
+
+                    deleteDaily.setAttribute("href","dailies/delete/"+dailyId);
+
+                    repeatDaysSection.forEach(checkbox => {
+                        checkbox.checked = daily.repeatDays.includes(checkbox.value);
+                    });
+
+                    repeatMonthDaysSection.forEach(checkbox => {
+                        checkbox.checked = daily.repeatMonthDays.includes(Number(checkbox.value));
+                    });
+
+
+                    if(daily.public){
+                        dailyInput.readOnly = true
+                        dailyDes.readOnly = true
+                        dailyInputUpdateChallenge.addEventListener('mousedown', function(event) {event.preventDefault();});
+                        dailyDifficult.readOnly = true
+                    }else{
+                        dailyInput.readOnly = false
+                        dailyDes.readOnly = false
+                        dailyDifficult.readOnly = false
+                    }
+
+                    const form = document.getElementById('dailyForm');
+                    const modalTitle = document.getElementById('DailyModalTitle');
+                    form.action = '/dailies/update/'+dailyId;
+                    modalTitle.textContent = 'Chỉnh sửa';
+
+                    const modal = new bootstrap.Modal(document.getElementById('modalDaily'));
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error('Lỗi khi lấy dữ liệu Daily:', error);
+                    alert('Không thể tải dữ liệu Daily. Vui lòng thử lại.');
+                });
+        };
+
+
+        function toggleRepeatOptions() {
+            const repeatFrequency = document.getElementById('repeatFrequency').value;
+            const repeatEverySection = document.getElementById('repeatEverySection');
+            const repeatDaysSection = document.getElementById('repeatDaysSection');
+            const repeatMonthDaysSection = document.getElementById('repeatMonthDaysSection');
+            const repeatEveryUnit = document.getElementById('repeatEveryUnit');
+
+            repeatEverySection.style.display = 'block';
+            repeatEveryUnit.textContent = 'Ngày';
+            repeatDaysSection.style.display = 'none';
+            repeatMonthDaysSection.style.display = 'none';
+
+            if (repeatFrequency === 'WEEKLY') {
+                repeatEverySection.style.display = 'block';
+                repeatDaysSection.style.display = 'block';
+                repeatEveryUnit.textContent = 'Tuần';
+            } else if (repeatFrequency === 'MONTHLY') {
+                repeatEverySection.style.display = 'block';
+                repeatMonthDaysSection.style.display = 'block';
+                repeatEveryUnit.textContent = 'Tháng';
+            }
+
+        }
+        document.getElementById('repeatFrequency').addEventListener('change', toggleRepeatOptions);
+
+        // Validate form Daily
+        const dailyForm = document.getElementById("dailyForm");
+        const dailyTitleInput = document.getElementById("dailyTitle");
+        const dailyTitleError = document.getElementById("dailyTitleError");
+        const repeatEveryInput = document.getElementById("repeatEvery");
+        const repeatEveryError = document.getElementById("repeatEveryError");
+        const repeatDaysError = document.getElementById("repeatDaysError");
+        const repeatMonthDaysError = document.getElementById("repeatMonthDaysError");
+
+        dailyForm.addEventListener("submit", (e) => {
+            let valid = true;
+
+            if (dailyTitleInput.value.trim() === "") {
+                dailyTitleError.style.display = "block";
+                valid = false;
+            } else {
+                dailyTitleError.style.display = "none";
+            }
+
+            if (repeatEveryInput.value < 1 || repeatEveryInput.value === "") {
+                repeatEveryError.style.display = "block";
+                valid = false;
+            } else {
+                repeatEveryError.style.display = "none";
+            }
+
+            const frequency = document.getElementById('repeatFrequency').value;
+            if (frequency === "WEEKLY") {
+                const repeatDays = document.querySelectorAll('#repeatDaysSection input[type="checkbox"]:checked');
+                if (repeatDays.length === 0) {
+                    repeatDaysError.style.display = "block";
+                    valid = false;
+                } else {
+                    repeatDaysError.style.display = "none";
+                }
+            } else {
+                repeatDaysError.style.display = "none";
+            }
+
+            if (frequency === "MONTHLY") {
+                const repeatMonthDays = document.querySelectorAll('#repeatMonthDaysSection input[type="checkbox"]:checked');
+                if (repeatMonthDays.length === 0) {
+                    repeatMonthDaysError.style.display = "block";
+                    valid = false;
+                } else {
+                    repeatMonthDaysError.style.display = "none";
+                }
+            } else {
+                repeatMonthDaysError.style.display = "none";
+            }
+
+            if (!valid) {
+                e.preventDefault();
+            }
+        });
+
+        //Daily checked task
+        window.dailyCheckedTask = (dailyId)=>{
+            const dailytask = document.querySelector(`#daily-task-${dailyId}`)
+            let url;
+            if(dailytask.classList.contains("completed")){
+                url = `/dailies/${dailyId}/task_checked?status=unchecked`;
+            }else{
+                url = `/dailies/${dailyId}/task_checked?status=checked`;
+            }
+            fetch(url)
+                .then(response =>{
+                    if(response.url.includes("/login")){
+                        window.location.href = "/login";
+                        return;
+                    }
+                    return response.json()
+                })
+                .then(data=>{
+                    const dailystreak = document.querySelector(`#daily-streak-${dailyId}`)
+                    const dailycheckbox = document.querySelector(`#daily-checkbox-${dailyId}`)
+
+                    dailystreak.textContent = `${data.streak}`;
+
+                    if(data.completed){
+                        dailytask.classList.add('completed');
+                    }else{
+                        dailytask.classList.remove('completed');
+                    }
+
+                    if(dailytask.classList.contains("completed")){
+                        dailycheckbox.innerHTML = '<i class="fas fa-check"></i>';
+                    }else{
+                        dailycheckbox.innerHTML = '';
+                    }
+
+                    console.log(data)
+                    if (data.userCoinMessage != null && data.userCoinMessage !== "") {
+                        showResponseToast(data.userCoinMessage, 'completeTask');
+                        let currentCoins = parseInt(document.querySelector(".user-coin").nextElementSibling.textContent);
+                        document.querySelector(".user-coin").nextElementSibling.textContent = currentCoins + data.coinEarned;
+                    }
+                })
+                .catch(error => {
+                    console.error("Lỗi:",error)
+                    alert("Có lỗi xảy ra khi cập nhật! Phiên đăng nhập hết hạn, mời đăng nhập lại!")
+                })
+        }
+        // Todo
+        window.openTodoCreateModal = () => {
+            document.getElementById("todoId").value = '';
+            document.getElementById("todoTitle").value = '';
+            document.getElementById("todoDescription").value = '';
+            document.getElementById("todoDifficulty").value = 'EASY';
+            document.getElementById("subtasksContainer").innerHTML = '';
+            document.getElementById("executionDate").value = '';
+
+            document.getElementById("deleteTodoButton").style.display = 'none';
+
+            const form = document.getElementById('todoForm');
+            const modalTitle = document.getElementById('todoContent');
+            form.action = '/todos/save';
+            modalTitle.textContent = 'Tạo mới';
+
+            const modalTodo = new bootstrap.Modal(document.getElementById("modalTodo"));
+            modalTodo.show();
+        };
+
+        window.openTodoUpdateModal = (todoId) => {
+            fetch(`/todos/${todoId}`)
+                .then(response => {
+                    if (response.url.includes('/login')) {
+                        window.location.href = '/login';
+                        return;
+                    }
+                    return response.json();
+                })
+                .then(todo => {
+                    console.log(todo)
+                    document.getElementById("todoId").value = todoId;
+                    document.getElementById("todoTitle").value = todo.title;
+                    document.getElementById("todoDescription").value = todo.description;
+                    document.getElementById("todoDifficulty").value = todo.difficulty;
+                    document.getElementById("executionDate").value = todo.executionDate;
+
+                    // Load subtasks
+                    const subtasksContainer = document.getElementById("subtasksContainer");
+                    subtasksContainer.innerHTML = '';
+                    if (todo.todoSubtasks) {
+                        todo.todoSubtasks.forEach(subtask => {
+                            addSubtaskField(subtask.title, subtask.todoSubtaskId);
+                        });
+                    }
+
+                    document.getElementById("deleteTodoButton").style.display = 'block';
+                    document.getElementById("deleteTodo").setAttribute("href", `/todos/delete/${todoId}`);
+
+                    const form = document.getElementById('todoForm');
+                    const modalTitle = document.getElementById('todoContent');
+                    form.action = '/todos/'+ todoId;
+                    modalTitle.textContent = 'Chỉnh sửa';
+
+                    const modalTodo = new bootstrap.Modal(document.getElementById("modalTodo"));
+                    modalTodo.show();
+                })
+                .catch(error => {
+                    console.error('Lỗi khi lấy dữ liệu Todo:', error);
+                    alert('Không thể lấy dữ liệu Todo. Do phiên đăng nhập hết hạn! Mời đăng nhập lại');
+                });
+        };
+
+        //validate Todo
+        const todoForm = document.getElementById("todoForm");
+        const todoTitleInput = document.getElementById("todoTitle");
+        const todoTitleInputError = document.getElementById("todoTitleError");
+
+        todoForm.addEventListener("submit",(e) => {
+            let valid = true;
+
+            if(todoTitleInput.value === ""){
+                todoTitleInputError.style.display = "block";
+                valid = false;
+            }
+
+            if(!valid){
+                e.preventDefault()
+            }
+        })
+
+        window.addSubtaskField = (title = '', subtaskId = '') => {
+            const container = document.getElementById("subtasksContainer");
+            const subtaskDiv = document.createElement("div");
+            subtaskDiv.className = "subtask-field mb-2 d-flex align-items-center";
+            subtaskDiv.innerHTML = `<input type="text" class="form-control me-2" name="subtasks" value="${title}" placeholder="Nhập subtask">
+                                    <input type="hidden" name="subtaskIds" value="${subtaskId}">
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">Xóa</button>`;
+            container.appendChild(subtaskDiv);
+        };
+
+        window.updateTodotaskCompletion = (todoId,subTaskId)=>{
+            let url;
+            if(subTaskId != null){
+                url = `/todos/${todoId}/subtasks/${subTaskId}/completion`;
+            }else{
+                url = `/todos/${todoId}/completion`;
+            }
+            fetch(url)
+                .then(response =>{
+                    if(response.url.includes("/login")){
+                        window.location.href="/login";
+                        return;
+                    }
+                    return response.json()
+                })
+                .then(data=>{
+                    const todotask = document.querySelector(`#todo-task-${todoId}`)
+                    const dailycheckbox = document.querySelector(`#todo-checkbox-${todoId}`)
+
+
+                    if(data.completed){
+                        todotask.classList.add('completed');
+                    }else{
+                        todotask.classList.remove('completed');
+                    }
+
+                    if(todotask.classList.contains("completed")){
+                        dailycheckbox.innerHTML = '<i class="fas fa-check"></i>';
+                    }else{
+                        dailycheckbox.innerHTML = '';
+                    }
+
+                    if (data.todoSubtasks != null) {
+                        data.todoSubtasks.forEach(taskComplete => {
+                            const checkbox = document.getElementById(`subtask-${taskComplete.todoSubtaskId}`);
+                            checkbox.checked = taskComplete.completed;
+                        });
+                    }
+
+                    if (data.userCoinMessage != null) {
+                        showResponseToast(data.userCoinMessage, 'completeTask');
+                        let currentCoins = parseInt(document.querySelector(".user-coin").nextElementSibling.textContent);
+                        document.querySelector(".user-coin").nextElementSibling.textContent = currentCoins + data.coinEarned;
+                    }
+                })
+                .catch(error => {
+                    console.error("Lỗi:",error)
+                    alert("Có lỗi xảy ra khi cập nhật! Phiên đăng nhập hết hạn, mời đăng nhập lại!")
+                })
+        }
+
+        document.querySelectorAll('.todo-dropdown-toggle').forEach(toggle => {
+            toggle.addEventListener('click', function () {
+                const icon = this.querySelector('i');
+                if (this.getAttribute('aria-expanded') === 'true') {
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                } else {
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-up');
+                }
+            });
+        });
+
+        //Diary
+        // Open create diary modal
+        window.openDiaryCreateModal = () => {
+            document.getElementById("diaryId").value = '';
+            document.getElementById("diaryContentInput").value = '';
+            document.getElementById("diaryImage").value = '';
+            document.getElementById("diaryImagePreview").style.display = 'none';
+            document.getElementById("diaryImagePreview").src = '';
+            document.getElementById("completedTasksList").innerHTML = '';
+            document.getElementById("diaryChallenge").value = '';
+
+            document.getElementById("deleteDiaryButton").style.display = 'none';
+            document.getElementById("updateTasksButton").style.display = 'block';
+            document.getElementById("saveDiaryButton").style.display = 'block';
+
+            const form = document.getElementById('diaryForm');
+            const modalTitle = document.getElementById('diaryContent');
+            form.action = '/diaries/save';
+            modalTitle.textContent = 'Tạo mới';
+
+            // Load completed tasks for today
+            fetchCompletedTasks();
+
+            const modalDiary = new bootstrap.Modal(document.getElementById("modalDiary"));
+            modalDiary.show();
+        };
+
+        // Open update diary modal
+        window.openDiaryUpdateModal = (diaryId) => {
+            fetch(`/diaries/${diaryId}`)
+                .then(response => {
+                    if (response.url.includes('/login')) {
+                        window.location.href = '/login';
+                        return;
+                    }
+                    return response.json();
+                })
+                .then(diary => {
+                    document.getElementById("diaryId").value = diaryId;
+                    document.getElementById("diaryContentInput").value = diary.content;
+                    document.getElementById("diaryImage").value = '';
+                    if (diary.imageUrl) {
+                        document.getElementById("diaryImagePreview").style.display = 'block';
+                        document.getElementById("diaryImagePreview").src = diary.imageUrl;
+                    } else {
+                        document.getElementById("diaryImagePreview").style.display = 'none';
+                    }
+                    document.getElementById("diaryChallenge").value=diary.challengeId==null?'':diary.challengeId;
+
+                    // Load completed tasks
+                    const completedTasksList = document.getElementById("completedTasksList");
+                    completedTasksList.innerHTML = '';
+                    if (diary.completedTasks) {
+                        diary.completedTasks.forEach(task => {
+                            const li = document.createElement("li");
+                            li.textContent = task.title;
+                            completedTasksList.appendChild(li);
+                        });
+                    }
+
+                    document.getElementById("deleteDiaryButton").style.display = 'block';
+                    document.getElementById("updateTasksButton").style.display = 'block';
+                    document.getElementById("saveDiaryButton").style.display = 'block';
+                    document.getElementById("deleteDiary").setAttribute("href", `/diaries/delete/${diaryId}`);
+
+                    const form = document.getElementById('diaryForm');
+                    const modalTitle = document.getElementById('diaryContent');
+                    form.action = '/diaries/update';
+                    modalTitle.textContent = 'Chỉnh sửa';
+
+                    if(diary.today != diary.date){
+                        document.getElementById("updateTasksButton").style.display = 'none';
+                    }
+
+
+                    const modalDiary = new bootstrap.Modal(document.getElementById("modalDiary"));
+                    modalDiary.show();
+                })
+                .catch(error => {
+                    console.error('Lỗi khi lấy dữ liệu nhật ký:', error);
+                    alert('Không thể lấy dữ liệu nhật ký. Do phiên đăng nhập hết hạn! Mời đăng nhập lại');
+                });
+        };
+
+        //validate Diary
+        const diaryForm = document.getElementById("diaryForm");
+        const diaryTitleInput = document.getElementById("diaryContentInput");
+        const diaryTitleInputError = document.getElementById("diaryContentError");
+
+        diaryForm.addEventListener("submit",(e) => {
+            let valid = true;
+
+            if(diaryTitleInput.value === ""){
+                diaryTitleInputError.style.display = "block";
+                valid = false;
+            }
+
+            if(!valid){
+                e.preventDefault()
+            }
+        })
+
+        // Fetch completed tasks for today
+        window.fetchCompletedTasks = () => {
+            fetch('/diaries/completed-tasks')
+                .then(response => response.json())
+                .then(tasks => {
+                    const completedTasksList = document.getElementById("completedTasksList");
+                    completedTasksList.innerHTML = '';
+                    tasks.forEach(task => {
+                        const li = document.createElement("li");
+                        li.textContent = task.title;
+                        completedTasksList.appendChild(li);
+                    });
+                });
+        };
+
+        // Update completed tasks for diary
+        window.updateDiaryTasks = () => {
+            const diaryId = document.getElementById("diaryId").value;
+            if (diaryId) {
+                fetch(`/diaries/${diaryId}/update-tasks`, { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        const completedTasksList = document.getElementById("completedTasksList");
+                        completedTasksList.innerHTML = '';
+                        data.completedTasks.forEach(task => {
+                            const li = document.createElement("li");
+                            li.textContent = task.title;
+                            completedTasksList.appendChild(li);
+                        });
+                    });
+            } else {
+                fetchCompletedTasks();
+            }
+        };
+    });
+
+</script>
+</body>
+</html>

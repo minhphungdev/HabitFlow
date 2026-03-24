@@ -1,0 +1,124 @@
+body {
+    background-color: #ffffff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-container {
+    max-width: 800px;
+    width: 100%;
+    padding: 20px;
+}
+
+.login-box {
+    background-color: #f2f2f2;
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    font-size: 48px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    color: #333;
+}
+
+.login-title {
+    font-size: 28px;
+    margin-bottom: 30px;
+    color: #333;
+}
+
+.input-group {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.input-group-text {
+    background-color: transparent;
+    border-right: none;
+}
+
+.form-control {
+    border-left: none;
+    padding: 12px;
+    height: auto;
+}
+
+.form-control:focus {
+    box-shadow: none;
+    border-color: #ced4da;
+}
+
+/* ĐÃ ĐỔI SANG XANH INDIGO */
+.login-button {
+    background-color: #5a67d8;
+    border-color: #5a67d8;
+    color: white;
+    padding: 12px;
+    font-weight: bold;
+    margin-top: 10px;
+    width: 65%;
+}
+
+.login-button:hover {
+    background-color: #4c51bf;
+    border-color: #4c51bf;
+    color: white;
+}
+
+.forgot-password {
+    display: block;
+    text-align: center;
+    margin-bottom: 15px;
+    color: #666;
+    text-decoration: none;
+}
+
+.register-link {
+    color: #0099ff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.error {
+    color: red;
+    font-size: 14px;
+    text-align: left;
+}
+
+.google-login-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    color: rgba(0, 0, 0, 0.54);
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    padding: 10px 24px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 4px 0 rgba(0,0,0,0.2);
+    cursor: pointer;
+    margin-top: 10px;
+    width: 65%;
+    margin-bottom: 20px;
+}
+
+.google-login-button:hover {
+    background-color: #f8f9fa;
+    border-color: #d2d3d4;
+    box-shadow: 0 2px 6px 0 rgba(0,0,0,0.25);
+}
+
+.google-login-button img {
+    width: 18px;
+    height: 18px;
+    margin-right: 12px;
+}

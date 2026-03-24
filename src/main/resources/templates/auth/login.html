@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/auth_login.css">
+</head>
+<body>
+<div class="login-container">
+    <div class="login-box">
+        <div class="logo">HabitFlow</div>
+
+        <h2 class="login-title">Đăng nhập</h2>
+
+        <div th:if="${expired}" class="alert alert-warning alert-dismissible fade show" role="alert">
+            <span th:text="${expired}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+        <div th:if="${fail}" class="alert alert-danger" th:text="${fail}"></div>
+
+        <form th:action="@{/login}" th:object="${userLogin}" method="post">
+            <div class="input-group">
+                    <span class="input-group-text">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </span>
+                <input type="text" class="form-control" name="email" placeholder="Email" th:field="*{email}">
+            </div>
+            <div class="error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+
+            <div class="input-group">
+                    <span class="input-group-text">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </span>
+                <input type="password" class="form-control" name="password" placeholder="Mật Khẩu" th:field="*{password}">
+            </div>
+            <div class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+
+            <button type="submit" class="btn btn-primary login-button">Đăng Nhập</button>
+
+            <a href="/oauth2/authorization/google" class="google-login-button">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png" alt="Google logo">
+                Đăng nhập bằng Google
+            </a>
+        </form>
+
+        <a class="forgot-password" th:href="@{/forgot-password}">Quên mật khẩu?</a>
+
+        <div>
+            <span>Chưa có tài khoản </span>
+            <a class="register-link" th:href="@{/register}">Đăng ký ngay</a>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+
+
+

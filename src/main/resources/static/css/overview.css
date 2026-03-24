@@ -1,0 +1,707 @@
+:root {
+    --sidebar-width: 250px;
+    --sidebar-collapsed-width: 70px;
+    --primary-color: #52f724;
+    --primary-hover: #e5a91f;
+    --dark-bg: #1a1a1a;
+    --light-bg: #ffffff;
+    --sidebar-bg: #f2f2f2;
+    --sidebar-color: #333;
+    --progress-bar-height: 8px;
+    --yellow-color: #ffcc00;
+    --green-color: #00b25a;
+    --red-color: #ff3860;
+    --blue-color: #3298dc;
+    --gray-bg: #f2f2f2;
+    --card-radius: 10px;
+    --task-radius: 8px;
+}
+
+body {
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-color: #fff;
+    font-family: "Nunito", sans-serif;
+}
+.form-control::-webkit-scrollbar{
+    width: 8px;
+}
+.form-control::-webkit-scrollbar-thumb{
+    background-color: #cccccc;
+    border-radius: 4px;
+}
+
+.coin-icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* Main content area */
+#content {
+    margin-left: var(--sidebar-width);
+    transition: all 0.3s;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+#content.expanded {
+    margin-left: var(--sidebar-collapsed-width);
+}
+
+.head-content{
+    border-right: 1px solid #eee;
+}
+
+/* Progress section */
+.progress-section {
+    background-color: #f2f2f2;
+    border-radius: 10px;
+    padding: 35px;
+    margin: 15px;
+}
+
+.progress-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 20px;
+}
+
+.progress-row {
+ width: 70%;
+}
+
+.progress-label {
+    width: 50%;
+    font-size: 14px;
+}
+
+.progress-bar-container {
+    flex: 1;
+    display: flex;
+    justify-content: end;
+    background: linear-gradient(135deg, #fbce00, #f43a00);
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background-color: #e0e0e0;
+    align-content: end;
+}
+
+.progress-value {
+    width: 200px;
+    text-align: right;
+    font-size: 14px;
+    color: #666;
+}
+
+/* Challenge card */
+.challenge-card {
+    background-color: #ffcc00;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 15px;
+    text-align: center;
+    color: black;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    z-index: 101;
+}
+
+.challenge-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.challenge-subtitle {
+    font-size: 18px;
+    margin-bottom: 10px;
+    overflow-y: auto;
+    max-height: 80px;
+}
+.challenge-subtitle::-webkit-scrollbar{
+    width: 8px;
+}
+.challenge-subtitle::-webkit-scrollbar-thumb{
+    background-color: #ff812d;
+    border-radius: 4px;
+}
+
+.challenge-progress {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.challenge-streak {
+    font-size: 16px;
+}
+
+.challenge-streak i {
+    color: #ff3860;
+}
+
+.challenge-card.active {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+
+}
+
+.container{
+    position: relative;
+}
+
+/* Dropdown Styles */
+.challenge-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-top: 10px;
+    border: 1px solid #e9ecef;
+}
+
+.challenge-dropdown.show {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+/* Custom Scrollbar */
+.challenge-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.challenge-dropdown::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.challenge-dropdown::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #fbce00, #f57953);
+    border-radius: 10px;
+}
+
+.challenge-dropdown::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #fbce00, #f57953);
+}
+
+.dropdown-header {
+    background: linear-gradient(135deg, #fbce00, #f57953);
+    color: white;
+    padding: 15px 20px;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 15px 15px 0 0;
+    display: flex;
+    align-items: center;
+}
+
+.dropdown-header i {
+    margin-right: 10px;
+    font-size: 1.1rem;
+}
+
+.dropdown-content {
+    padding: 10px 10px;
+}
+
+.dropdown-item {
+    padding: 15px 20px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    border-bottom: 1px solid #00000017;
+}
+
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item:hover {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+}
+
+.item-title {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 1rem;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.item-category {
+    color: #7f8c8d;
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+}
+
+.item-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.item-progress {
+    background: #ecf0f1;
+    border-radius: 10px;
+    padding: 5px 12px;
+    font-size: 0.8rem;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.item-streak {
+    display: flex;
+    align-items: center;
+    color: #e74c3c;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.item-streak i {
+    margin-left: 5px;
+    color: #e67e22;
+    font-size: 0.9rem;
+}
+
+/* Search bar */
+.search-container {
+    padding: 15px;
+    border-top: 1px solid #eee;
+}
+
+.search-bar {
+    position: relative;
+    width: 25%;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 15px;
+    padding-right: 40px;
+    border: none;
+    border-radius: 20px;
+    background-color: #f2f2f2;
+}
+
+.search-button {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+/* Task columns */
+.tasks-container {
+    display: flex;
+    padding: 15px;
+}
+
+.task-column {
+    width: 20%;
+    min-height: 482px;
+    background-color: #f2f2f2;
+    border-radius: 10px;
+    padding: 20px;
+    flex: 1;
+    margin: 10px;
+    position: relative;
+}
+
+.column-header {
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.add-task-button {
+    width: 100%;
+    margin-bottom: 15px;
+    background-color: #c1c1c1;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 15px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.add-task-button i {
+    margin-right: 5px;
+}
+
+.tasks-contain {
+    max-height: calc(4 * 87px); /*  reward-item: 50px + 12px (margin-bottom) */
+    overflow-y: auto;
+}
+
+.tasks-contain::-webkit-scrollbar {
+    width: 8px;
+}
+
+.tasks-contain::-webkit-scrollbar-thumb {
+    background-color: #d3d3d3;
+    border-radius: 4px;
+}
+
+/* Habit items */
+.task-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    height: 75px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    background-color: #ffcc00;
+}
+
+.btn-plus-container{
+    display: flex;
+    align-items: center;
+    width: 60px;
+    height: 100%;
+    background-color: inherit;
+}
+.btn-minus-container{
+    display: flex;
+    align-items: center;
+    width: 60px;
+    height: 100%;
+    background-color: inherit;
+}
+
+.color-indicator {
+    width: 5px;
+    height: 50px;
+    flex-shrink: 0;
+}
+
+.yellow-indicator {
+    background-color: #ffcc00;
+}
+
+.green-indicator {
+    background-color: #00b25a;
+}
+
+.red-indicator {
+    background-color: #ff3860;
+}
+
+.task-content {
+    width: 84%;
+    background-color: var(--light-bg);
+    padding: 5px 10px 5px 20px;
+    height: 100%;
+}
+
+.task-detail{
+    width: 100%;
+    text-align: left;
+    border: none;
+    background-color: inherit;
+}
+
+.task-detail div{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.task-detail:hover{
+    background-color: rgba(102, 102, 102, 0.18);
+    transition: 0.5s ease;
+}
+
+.task-description {
+    width: 100%;
+    font-size: 12px;
+    color: #666;
+    text-overflow: ellipsis;
+    height: 15px;
+    overflow-y: hidden;
+}
+
+.task-actions {
+    display: flex;
+    align-items: center;
+}
+
+.action-button {
+    margin: 10px;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 99%;
+    overflow-y: hidden;
+    text-decoration: none;
+    color: white;
+    background-color: rgb(44 44 44 / 24%);
+}
+
+.task-count {
+    margin-left: 5px;
+    font-weight: bold;
+    font-size: small;
+}
+
+/*Habit Modal*/
+.modal-header input, .modal-header textarea{
+    background-color: rgba(253, 253, 253, 0.5);
+}
+
+.modal-header input:focus, .modal-header textarea:focus{
+    background-color: rgba(255, 255, 255, 0.75);
+}
+
+/*Daily item*/
+.checkbox-item {
+    display: flex;
+    justify-content: space-between;
+    background-color: var(--yellow-color);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    height: 75px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    padding-left: 2px;
+}
+
+.checkbox-disable{
+    background-color: #787878;
+}
+
+.daily-checkbox-contain{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 60px;
+    height: 100%;
+    background-color: inherit;
+}
+
+.daily-checkbox {
+    width: 30px;
+    height: 30px;
+    margin: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #393939;
+    border:none;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.yellow-checkbox {
+    background-color: var(--yellow-color);
+}
+
+.green-checkbox {
+    background-color: var(--green-color);
+}
+
+.red-checkbox {
+    background-color: var(--red-color);
+}
+
+.completed .task-detail>div{
+    text-decoration: line-through;
+}
+
+/* Todo cards styling */
+.todo-header {
+    background-color: #e9e9e9;
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.todo-card {
+    display: flex;
+    margin-bottom: 12px;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: var(--yellow-color);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    justify-content: space-between;
+    min-height: 75px;
+    padding-left: 2px;
+}
+
+.todo-color-bar {
+    width: 60px;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    /*align-items: center;*/
+    background-color: inherit;
+}
+
+.todo-color-bar.yellow {
+    background-color: var(--yellow-color);
+}
+
+.todo-color-bar.green {
+    background-color: var(--green-color);
+}
+
+.todo-color-bar.red {
+    background-color: var(--red-color);
+}
+
+.todo-card-content {
+    flex: 1;
+    padding: 12px 15px;
+    background-color: var(--light-bg);
+}
+.todo-checkbox{
+    width: 30px;
+    height: 30px;
+    margin: 20px 10px 10px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #393939;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.todo-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.todo-title {
+    font-weight: 500;
+    font-size: 1rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.todo-menu-button {
+    background: none;
+    border: none;
+    color: #777;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.todo-progress {
+    display: flex;
+    align-items: center;
+    color: #777;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+}
+
+.todo-dropdown-toggle{
+    border: none;
+    margin-left: 10px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.todo-subtasks {
+    padding-left: 5px;
+}
+
+.todo-subtask {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.todo-subtask input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.todo-subtask label {
+    margin-bottom: 0;
+    font-size: 0.95rem;
+}
+
+/* Journal section */
+.journal-day {
+    background-color: #bdbdbd;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.diary-task{
+    width: 100%;
+    height: 100%;
+    background-color: inherit;
+    border: none;
+    text-align: left;
+}
+#diaryChallenge{
+    background-color: rgba(253, 253, 253, 0.5);
+}
+
+.column-footer {
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    margin-top: 15px;
+    padding: 0px 50px;
+    position: absolute;
+    bottom: 10px;
+}
+
+@media (max-width: 992px) {
+    .tasks-container {
+        flex-wrap: wrap;
+    }
+
+    .task-column {
+        flex: 1 0 50%;
+        margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .task-column {
+        flex: 1 0 100%;
+    }
+
+    #content {
+        margin-left: 0;
+    }
+
+    #sidebar {
+        margin-left: -250px;
+    }
+
+    #sidebar.active {
+        margin-left: 0;
+    }
+}

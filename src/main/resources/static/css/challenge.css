@@ -1,0 +1,439 @@
+:root {
+    --sidebar-width: 250px;
+    --sidebar-collapsed-width: 70px;
+    --primary-color: #59f724;
+    --primary-hover: #e5a91f;
+    --dark-bg: #1a1a1a;
+    --light-bg: #ffffff;
+    --sidebar-bg: #f2f2f2;
+    --sidebar-color: #333;
+    --progress-bar-height: 8px;
+    --yellow-color: #ffcc00;
+    --green-color: #00b25a;
+    --red-color: #ff3860;
+    --blue-color: #3298dc;
+    --gray-bg: #f2f2f2;
+    --card-radius: 10px;
+    --task-radius: 8px;
+}
+
+body {
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-color: #fff;
+    font-family: "Nunito", sans-serif;
+}
+
+
+/* Main content area */
+#content {
+    margin-left: var(--sidebar-width);
+    transition: all 0.3s;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+#content.expanded {
+    margin-left: var(--sidebar-collapsed-width);
+}
+
+
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+.page-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-left: 15px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+}
+
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    background-color: var(--gray-bg);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+}
+
+.user-details {
+    flex: 1;
+}
+
+.username {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.exp-bar {
+    height: var(--progress-bar-height);
+    background-color: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    width: 200px;
+}
+
+.exp-progress {
+    height: 100%;
+    background-color: var(--yellow-color);
+}
+
+.exp-text {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 3px;
+}
+
+.level-badge {
+    background-color: var(--gray-bg);
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.gold-badge {
+    background-color: var(--yellow-color);
+    color: #fff;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* Content area */
+.content-area {
+    padding: 20px;
+    border-top: 1px solid #eee;
+    position: relative;
+}
+
+.add-challenge-btn {
+    background-color: var(--green-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}
+
+.add-challenge-btn:hover {
+    background-color: #218838;
+    color: white;
+}
+
+/* Search bar */
+.search-container {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.search-bar {
+    display: flex;
+    background-color: var(--gray-bg);
+    border-radius: 20px;
+    overflow: hidden;
+    max-width: 400px;
+}
+
+.search-input {
+    flex: 1;
+    border: none;
+    background-color: transparent;
+    padding: 10px 15px;
+    outline: none;
+}
+
+.search-button {
+    background-color: transparent;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+}
+
+/* Challenges section */
+.challenges-header {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.challenges-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    overflow-y: auto;
+    max-height: calc(3*190px);
+}
+
+.challenges-grid::-webkit-scrollbar {
+    width: 8px;
+}
+
+.challenges-grid::-webkit-scrollbar-thumb {
+    background-color: #d3d3d3;
+    border-radius: 4px;
+}
+
+.challenge-card {
+    background-color: var(--gray-bg);
+    border-radius: var(--card-radius);
+    padding: 20px;
+    width: 500px;
+    height: 170px;
+}
+.challenge-detail{
+    width: 100%;
+    border: none;
+    border-radius: 5px;
+}
+
+.challenge-detail:hover{
+    background-color: rgba(115, 115, 115, 0.28);
+    cursor: pointer;
+}
+
+.challenge-name {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.challenge-description {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 15px;
+    height: 21.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.challenge-progress {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.progress-text {
+    font-weight: bold;
+}
+
+.footer-content{
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    justify-content: space-between;
+}
+
+.streak-info {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    justify-content: end;
+}
+
+.update-button{
+    border: none;
+}
+
+.update-button:hover{
+    color: cornflowerblue;
+}
+
+.streak-info i {
+    color: #ff6b35;
+    margin-left: 5px;
+}
+
+/*modal habit daily*/
+.modal-header input, .modal-header textarea{
+    background-color: rgba(253, 253, 253, 0.5);
+}
+
+.modal-header input:focus, .modal-header textarea:focus{
+    background-color: rgba(255, 255, 255, 0.75);
+}
+
+/* Calendar styles */
+.calendar {
+    background-color: #a8a8a8;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    width: 90%;
+}
+
+.calendar__header {
+    padding: 15px 20px;
+    border-radius: 10px 10px 0px 0px;
+}
+
+.calendar__month-year {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.calendar__nav {
+    display: flex;
+    gap: 10px;
+}
+
+.calendar__nav-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #333;
+}
+
+.calendar__opts {
+    background-color: #fff;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 15px;
+    padding: 15px 20px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+select {
+    background-color: #f3f4f6;
+    padding: 10px 30px 10px 15px;
+    border-radius: 20px;
+    border: none;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.9rem;
+    -webkit-appearance: none;
+}
+
+.calendar__body {
+    background-color: #fff;
+}
+
+.calendar__days {
+    padding: 10px 20px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.calendar__days > div {
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #888;
+    padding: 5px 0;
+}
+
+.calendar__dates {
+    padding: 0 20px 15px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.calendar__date {
+    text-align: center;
+    height: 20px;
+    line-height: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    position: relative;
+    border-radius: 20%;
+    margin: 2px;
+}
+
+.calendar__date:not(.calendar__date--grey):hover {
+    background-color: #f0f0f0;
+}
+
+.calendar__date--grey {
+    color: #ccc;
+    cursor: not-allowed;
+}
+
+.calendar__date--completed {
+    background-color: #52F724FF;
+    color: #fff;
+}
+
+.info-box {
+    margin-top: 10px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.diary-card{
+    background-color: var(--gray-bg);
+    border-radius: var(--card-radius);
+    padding: 20px;
+    width: 100%;
+    height: 70px;
+}
+
+.challengeOverviewDescription{
+    height: 100px;
+    overflow-y: auto;
+}
+
+.challengeOverviewDescription::-webkit-scrollbar{
+    width: 6px;
+}
+.challengeOverviewDescription::-webkit-scrollbar-thumb{
+    background-color: #cccccc;
+    border-radius: 4px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #sidebar {
+        margin-left: calc(var(--sidebar-width) * -1);
+    }
+
+    #sidebar.active {
+        margin-left: 0;
+    }
+
+    #content {
+        margin-left: 0;
+    }
+
+    #content.expanded {
+        margin-left: 0;
+    }
+
+    .user-info {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .exp-bar {
+        width: 100%;
+    }
+
+    .challenges-grid {
+        grid-template-columns: 1fr;
+    }
+}
+

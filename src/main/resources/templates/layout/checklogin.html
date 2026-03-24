@@ -1,0 +1,54 @@
+<div th:fragment="checklogin">
+    <div class="modal fade" id="completionModal" tabindex="-1" aria-labelledby="completionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="completionModalLabel">Chúc mừng!</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="modalBody">
+                    <!-- Nội dung sẽ được điền động -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch('/check-on-login')
+                .then(response => response.json())
+                .then(data => {
+                    let bodyContent = '';
+                    if(data.challengesCompleted && data.challengesCompleted.length > 0) {
+                            bodyContent += "<h2>Thử Thách Hoàn Thành</h2>"
+                        data.challengesCompleted.forEach(challenge => {
+                            bodyContent += `<p>Thử thách <strong>${challenge.title}</strong> đã hoàn thành với tỷ lệ <strong>${challenge.progress}%</strong>! Bạn nhận được ${challenge.coinEarn} xu khi đã hoàn thành thử thách này.</p>`;
+                        });
+                    }
+                    if(data.achievementsCompleted && data.achievementsCompleted.length > 0){
+                        bodyContent += "<hr>" +
+                            "<h2>Thành Tựu Đạt Được</h2>"
+                        data.achievementsCompleted.forEach(achivement=>{
+                            bodyContent += `<p>Bạn đã đạt được thành tựu <strong>${achivement.achievementTitle}</strong></p>`
+                            if(achivement.bonusChallenge!=null){
+                                bodyContent += `<li>Bạn thêm được <strong>+${achivement.bonusChallenge}</strong> thử thách nữa</li>`
+                            }
+                            if(achivement.bonusTask!=null){
+                                bodyContent += `<li>Bạn thêm được <strong>+${achivement.bonusTask}</strong> các thói quen nữa</li>`
+                            }
+                        })
+                    }
+
+                    if(data.achievementsCompleted.length > 0 || data.challengesCompleted.length > 0){
+                        document.getElementById('modalBody').innerHTML = bodyContent;
+                        const modal = new bootstrap.Modal(document.getElementById('completionModal'));
+                        modal.show();
+                    }
+
+                })
+                .catch(error => console.error('Error checking challenges:', error));
+        });
+    </script>
+</div>

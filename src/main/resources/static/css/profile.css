@@ -1,0 +1,477 @@
+:root {
+    --sidebar-width: 250px;
+    --sidebar-collapsed-width: 70px;
+    --primary-color: #52f724;
+    --primary-hover: #e5a91f;
+    --dark-bg: #1a1a1a;
+    --light-bg: #ffffff;
+    --sidebar-bg: #f2f2f2;
+    --sidebar-color: #333;
+    --progress-bar-height: 8px;
+    --yellow-color: #ffcc00;
+    --green-color: #00b25a;
+    --red-color: #ff3860;
+    --blue-color: #3298dc;
+    --gray-bg: #f2f2f2;
+    --purple-color: #6f42c1;
+    --card-radius: 10px;
+    --task-radius: 8px;
+}
+
+body {
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-color: #fff;
+    font-family: "Nunito", sans-serif;
+}
+
+.coin-icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* Main content area */
+#content {
+    margin-left: var(--sidebar-width);
+    transition: all 0.3s;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+#content.expanded {
+    margin-left: var(--sidebar-collapsed-width);
+}
+
+/* Header styles */
+.app-header {
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+    padding: 20px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+.page-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-left: 15px;
+    color: #333;
+}
+
+.edit-profile-btn {
+    background-color: transparent;
+    border: 1px solid #ddd;
+    color: #666;
+    padding: 8px 12px;
+    border-radius: 5px;
+    transition: all 0.2s;
+    height: 40px;
+    width: 40px;
+}
+
+.edit-profile-btn:hover {
+    background-color: #f8f9fa;
+    border-color: #999;
+    color: #333;
+}
+
+/* Content area */
+.content-area {
+    padding: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Profile section */
+.profile-section {
+    background-color: #fff;
+    border-radius: var(--card-radius);
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.profile-avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 25%;
+    background-color: var(--gray-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    margin-right: 25px;
+    border: 3px solid #e9ecef;
+    overflow: hidden;
+}
+
+.profile-avatar img{
+    width: 90px;
+    height: 90px;
+}
+
+.profile-info {
+    flex: 1;
+}
+
+.profile-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-left: 5px;
+    color: #333;
+}
+
+.profile-username {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.profile-email {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.gold-badge {
+    background: linear-gradient(135deg, #ffd700, #ffb347);
+    color: #000;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Statistics grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.stat-card {
+    background-color: #fff;
+    border-radius: var(--card-radius);
+    padding: 25px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.stat-title {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.stat-subtitle {
+    font-size: 0.85rem;
+    color: #999;
+    line-height: 1.4;
+}
+
+/* Special styling for rank card */
+.rank-card .stat-value {
+    color: var(--primary-color);
+}
+
+.rank-card .stat-value::before {
+    content: "#";
+    font-size: 1.5rem;
+}
+
+.edit-profile-input{
+    background-color: #e9ecef;
+    border: none;
+    padding: 12px 15px;
+    border-radius: 8px;
+}
+
+/* Modal customizations */
+.modal-content {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+/*Modal challenge*/
+
+.challenge-modal-descrip{
+    background-color: #5ca3ff4f;
+    border: none;
+    width: 80%;
+    color: #a0a0a0;;
+}
+.challenge-modal-descrip::-webkit-scrollbar{
+    width: 6px;
+}
+.challenge-modal-descrip::-webkit-scrollbar-thumb{
+    background-color: #cccccc;
+    border-radius: 4px;
+}
+
+/*participate*/
+.challenge-card {
+    border-radius: 15px;
+    padding: 20px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.challenge-contain{
+    height: calc(3 * 148px);
+    overflow-y: auto;
+}
+.challenge-contain::-webkit-scrollbar {
+    width: 8px;
+}
+
+.challenge-contain::-webkit-scrollbar-thumb {
+    background-color: #d3d3d3;
+    border-radius: 4px;
+}
+
+.participants{
+    background-color: #5e00ffcf;
+    border-radius: 10px;
+}
+
+#challenge-contain::-webkit-scrollbar-thumb {
+    background-color: #d3d3d3;
+    border-radius: 4px;
+}
+
+.challenge-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0px 6px 5px 0px rgba(108, 108, 108, 0.73);
+}
+
+.card-content .challenge-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.challenge-card-content .challenge-desc {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin-bottom: 10px;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.challenge-card-content .challenge-duration {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/*diary*/
+/* Journal section */
+.journal-day {
+    background-color: #bdbdbd;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.diary-task{
+    width: 100%;
+    height: 100%;
+    background-color: inherit;
+    border: none;
+    text-align: left;
+}
+
+.column-footer {
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    margin-top: 15px;
+    padding: 0px 50px;
+    position: absolute;
+    bottom: 10px;
+}
+
+/*challengeStats*/
+#progressCircle{
+    transform: rotate(-90deg);
+    transform-origin: 60px 60px;
+    transition: stroke-dashoffset 0.5s ease;
+    stroke-dashoffset:calc(314 - (314 * var(--progress)) / 100);
+    stroke-dasharray:314
+}
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+    width: 50%;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+/* Task Completion Modal Styles */
+.task-completion-modal .modal-content {
+    border: none;
+    border-radius: 20px;
+    background: #24CC8F;
+    color: white;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.task-completion-modal .modal-header {
+    border: none;
+    padding: 30px 30px 20px;
+    text-align: center;
+}
+
+.task-completion-modal .modal-title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.task-completion-modal .modal-body {
+    padding: 20px 30px 40px;
+}
+
+.task-completion-modal .completion-subtitle {
+    text-align: center;
+    font-size: 1.1rem;
+    margin-bottom: 40px;
+    opacity: 0.9;
+}
+
+.task-completion-modal .stats-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-top: 30px;
+}
+
+.task-completion-modal .stat-item {
+    text-align: center;
+}
+
+.task-completion-modal .stat-number {
+    font-size: 3.5rem;
+    font-weight: bold;
+    line-height: 1;
+    margin-bottom: 10px;
+}
+
+.task-completion-modal .stat-label {
+    font-size: 1rem;
+    opacity: 0.9;
+    font-weight: 500;
+}
+
+.task-completion-modal .stat-divider {
+    width: 1px;
+    height: 80px;
+    background-color: rgba(255, 255, 255, 0.3);
+    margin: 0 20px;
+}
+
+.task-completion-modal .btn-close {
+    filter: invert(1);
+    opacity: 0.8;
+}
+
+.task-completion-modal .btn-close:hover {
+    opacity: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #sidebar {
+        margin-left: calc(var(--sidebar-width) * -1);
+    }
+
+    #sidebar.active {
+        margin-left: 0;
+    }
+
+    #content {
+        margin-left: 0;
+    }
+
+    #content.expanded {
+        margin-left: 0;
+    }
+
+    .content-area {
+        padding: 20px 15px;
+    }
+
+    .app-header {
+        padding: 15px 20px;
+    }
+
+    .page-title {
+        font-size: 1.3rem;
+    }
+
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .profile-avatar {
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Loading animation */
+.loading-skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}

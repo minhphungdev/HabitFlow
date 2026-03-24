@@ -1,0 +1,90 @@
+<nav id="sidebar" th:fragment="sidebar">
+    <!-- Toggle Button -->
+    <button id="sidebarCollapse" class="btn btn-link text-dark position-fixed" style="top: 10px; left: 10px; z-index: 1040;">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="sidebar-header d-flex justify-content-center mb-4">
+        <img src="/images/logo.png" style="height: 60px; width: 60px" alt="HabitFlow" class="logo">
+        <h3 class="my-3 mx-2">HabitFlow</h3>
+    </div>
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link" href="/home">
+                <i class="fas fa-home"></i>
+                <span>Trang chủ</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/overview">
+                <i class="fa-solid fa-chart-simple"></i>
+                <span>Tổng quan</span>
+            </a>
+        </li>
+<!--        <li class="nav-item">-->
+<!--            <a class="nav-link" href="#">-->
+<!--                <i class="fas fa-clock"></i>-->
+<!--                <span>Thói quen</span>-->
+<!--            </a>-->
+<!--        </li>-->
+<!--        <li class="nav-item">-->
+<!--            <a class="nav-link" href="#">-->
+<!--                <i class="fas fa-calendar"></i>-->
+<!--                <span>Hằng ngày</span>-->
+<!--            </a>-->
+<!--        </li>-->
+<!--        <li class="nav-item">-->
+<!--            <a class="nav-link" href="#">-->
+<!--                <i class="fas fa-list"></i>-->
+<!--                <span>Việc cần làm</span>-->
+<!--            </a>-->
+<!--        </li>-->
+        <li class="nav-item">
+            <a class="nav-link" href="/challenge_overview">
+                <i class="fas fa-trophy"></i>
+                <span>Thử thách</span>
+            </a>
+        </li>
+        <li class="nav-item mt-auto">
+            <a class="nav-link" href="/challenge_community">
+                <i class="fa-solid fa-users"></i>
+                <span>Cộng đồng</span>
+            </a>
+        </li>
+        <li class="nav-item mt-auto">
+            <a class="nav-link" href="/profile">
+                <i class="fas fa-user"></i>
+                <span>Hồ sơ</span>
+            </a>
+        </li>
+        <li class="nav-item mt-auto" th:if="${user.role.name() == 'ADMIN'}">
+            <a class="nav-link" href="/admin/dashboard">
+                <i class="fa-solid fa-table-columns"></i>
+                <span>Quản trị</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-danger" href="/logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Đăng xuất</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('sidebarCollapse').addEventListener('click', function () {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+            document.getElementById('content').classList.toggle('expanded');
+        });
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function () {
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    });
+</script>
+
+

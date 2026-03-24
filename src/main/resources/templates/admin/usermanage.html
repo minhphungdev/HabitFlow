@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - HabitFlow</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="/css/user_mange.css">
+    <link rel="stylesheet" href="/css/layout_dashboard.css">
+</head>
+<!-- Bootstrap JS Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<body>
+<!--TOAST-->
+<div th:replace="/layout/toastnotification.html :: toast(failed=${fail}, success=${success})"></div>
+
+<!-- Sidebar -->
+<div th:replace="/layout/sidebardashboard.html"></div>
+
+<!-- Page Content -->
+<div id="content">
+    <div class="container-fluid">
+        <!-- Dashboard Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Quản lý người dùng</h2>
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                <li class="breadcrumb-item active">Người dùng</li>
+            </ol>
+        </div>
+
+        <!--User List -->
+        <div class="user-list">
+            <div class="user-list-header">
+                <h5 class="user-list-title">Danh sách người dùng</h5>
+                <form action="" class="search-container" method="get">
+                    <input type="text" class="form-control search-input" name="search" placeholder="Tìm kiếm"
+                           value="">
+                    <i class="fas fa-search search-icon"></i>
+                </form>
+
+                <button class="btn add-user-btn" data-bs-target="#addUserModal" data-bs-toggle="modal">
+                    <i class="fas fa-plus"></i>
+                    <span>Thêm người dùng</span>
+                </button>
+            </div>
+            <div class="row">
+                <div class="col-8 user-table-contain">
+                    <div class="table-responsive">
+                        <table class="user-table">
+                            <thead>
+                            <tr>
+                                <th>Người dùng</th>
+                                <th>Email</th>
+                                <th>Tham gia từ</th>
+                                <th>Quyền</th>
+                                <th>Đăng nhập gần nhất</th>
+                                <th>Trạng thái</th>
+                                <th>Khóa</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="user : ${users}" th:onclick="|updateUser(${user.userId})|">
+                                <td>
+                                    <div class="client-info">
+                                        <div class="client-avatar">
+                                            <img th:src="${user.avatar==null?'/images/user_ava.png':user.avatar}" alt="Client Avatar">
+                                        </div>
+                                        <div>
+                                            <div th:text="${user.userName}">Jerome Bell</div>
+                                            <div class="text-muted small" th:text="'#' + ${user.userId}">#235645</div>
+                                        </div>
+
+                                    </div>
+                                </td>
+                                <td th:text="${user.email}"></td>
+                                <td th:text="${#temporals.format(user.createAt, 'dd-MM-yyyy')}"></td>
+                                <td th:text="${user.role}"></td>
+                                <td th:text="${#temporals.format(user.lastLogin, 'dd-MM-yyyy HH:mm')}"></td>
+                                <td>
+                                    <div th:class="${!user.isLocked()? 'status-badge status-confirmed' : 'status-badge status-canceled'}"
+                                         th:text="${!user.isLocked()? 'kích hoạt' : 'khóa'}">Confirmed</div>
+                                </td>
+                                <td>
+                                    <button class="lock-btn bg-warning" th:onclick="|confirmLockUser(${user.userId},${user.isLocked()});event.stopPropagation();|">
+                                        <i class="fa-solid fa-lock" th:if="${!user.isLocked()}"></i>
+                                        <i class="fa-solid fa-lock-open" th:if="${user.isLocked()}"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <div>
+                            <span th:if="${users.hasPrevious()}">
+                                <a th:href="@{/admin/users(page=${users.number - 1}, size=${users.size})}">Trang trước</a>
+                            </span>
+                                                <span>Trang <span th:text="${users.number + 1}">1</span> / <span th:text="${users.totalPages}">1</span></span>
+                                                <span th:if="${users.hasNext()}">
+                                <a th:href="@{/admin/users(page=${users.number + 1}, size=${users.size})}">Trang sau</a>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!--modal lock user-->
+                <div class="modal fade" id="lockConfirmModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="modalLockTitle">Modal title</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" id="contentLock">
+
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                <a type="button" class="btn btn-primary">Xác nhận</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-4">
+                    <div class="card">
+                        <div class="card-header bg-white">
+                            <h5 class="card-title mb-0">Người dùng mới</h5>
+                        </div>
+                        <div class="card-body user-stat">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex align-items-center" th:each="newUser:${newUsers}">
+                                    <div class="me-3">
+                                        <div class="avatar bg-light-primary rounded-circle text-center" style="width: 40px; height: 40px; line-height: 40px;">
+                                            <i class="fas fa-user text-primary"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1" th:text="${newUser.username}">Nguyễn Văn A</h6>
+                                        <small class="text-muted" th:text="${newUser.durationRegister > 0?'Đăng ký '+newUser.durationRegister+' giờ trước':'Mới đây'}">Đăng ký 2 giờ trước</small>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+<!--                user create modal-->
+                <div class="modal fade" id="addUserModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Thêm người dùng mới</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="AdduserForm" th:action="@{/admin/users/create}" method="post" th:object="${createUpdateUser}">
+                                    <div class="mb-3">
+                                        <label class="form-label">Tên người dùng</label>
+                                        <input type="text" class="form-control" id="createUserName" th:field="*{username}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="createEmail" th:field="*{email}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Mật khẩu</label>
+                                        <input type="password" class="form-control" id="createPassword" th:field="*{password}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Xác nhận mật khẩu</label>
+                                        <input type="password" class="form-control" id="createConfirmPassword" th:field="*{confirmPassword}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Quyền</label>
+                                        <select class="form-control" id="createRole" th:field="*{role}">
+                                            <option th:each="role : ${createUpdateUser.roleOption}" th:value="${role}" th:text="${role}">    </option>
+                                        </select>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                        <button type="submit" class="btn btn-primary" >Thêm</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="updateUserModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Cập nhật người dùng</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="userForm" th:action="@{/admin/users}" method="post" th:object="${createUpdateUser}">
+                                    <input type="hidden" class="form-control" id="userId" th:field="*{userId}">
+                                    <div class="mb-3">
+                                        <label class="form-label">Tên người dùng</label>
+                                        <input type="text" class="form-control" id="userName" th:field="*{username}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="email" th:field="*{email}" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Quyền</label>
+                                        <select class="form-control" id="role" th:field="*{role}">
+                                            <option th:each="role : ${createUpdateUser.roleOption}" th:value="${role}" th:text="${role}"></option>
+                                        </select>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                        <button type="submit" class="btn btn-primary">Cập nhật</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Modal update user
+        window.updateUser = (userId) => {
+            fetch(`/admin/users/${userId}`)
+                .then(response => {
+                    if (response.url.includes("/login")) {
+                        window.location.href = "/login";
+                        return;
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data);
+                    document.getElementById("userId").value = data.userId || "";
+                    document.getElementById("userName").value = data.username || "";
+                    document.getElementById("email").value = data.email || "";
+                    document.getElementById("role").value = data.role;
+
+                    const updateUserModal = new bootstrap.Modal(document.getElementById('updateUserModal'));
+                    updateUserModal.show();
+                })
+                .catch(error => {
+                    console.error('Lỗi khi lấy dữ liệu người dùng:', error);
+                    alert("Lỗi đã xảy ra! Phiên đăng nhập hết hạn mời đăng nhập lại "+error)
+                });
+        };
+
+        window.confirmLockUser= (userId,isLock)=>{
+            if(isLock){
+                document.getElementById("modalLockTitle").textContent= 'Mở khóa người dùng!'
+                document.getElementById("contentLock").innerHTML=`<p>Bạn xác nhận mở khóa người dùng này. Họ có thể tiếp tục sử dụng hệ thống!</p>`
+            }else{
+                document.getElementById("modalLockTitle").textContent= 'Khóa người dùng!'
+                document.getElementById("contentLock").innerHTML=`<p>Bạn xác nhận khóa người dùng này. Họ không thể tiếp tục sử dụng hệ thống!</p>`
+            }
+
+            document.querySelector("#lockConfirmModal a").href = `/admin/users/lock/${userId}`
+
+            const modal = new bootstrap.Modal(document.getElementById("lockConfirmModal"))
+            modal.show();
+        }
+    });
+
+</script>
+</body>
+</html>

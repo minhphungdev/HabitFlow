@@ -1,0 +1,222 @@
+:root {
+    --sidebar-width: 250px;
+    --sidebar-collapsed-width: 70px;
+    --topbar-height: 60px;
+    --primary-color: #5a67d8; /* Đổi từ #f7b924 */
+    --primary-hover: #4c51bf;
+    --dark-bg: #1a1a1a;
+    --light-bg: #f2f2f2;
+    --sidebar-bg: #2c2c2c;
+    --sidebar-color: #e0e0e0;
+}
+
+body {
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-color: #f5f5f5;
+}
+
+/* Main content area */
+#content {
+    margin-left: var(--sidebar-width);
+    padding: 20px;
+    transition: all 0.3s;
+    min-height: calc(100vh - var(--topbar-height));
+}
+
+#content.expanded {
+    margin-left: var(--sidebar-collapsed-width);
+}
+
+/* Dashboard cards */
+.dashboard-card {
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+    height: 100%;
+    background-color: #fff;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+}
+
+.card-icon {
+    font-size: 2rem;
+    background-color: rgba(247, 185, 36, 0.2);
+    color: var(--primary-color);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* User list styles */
+.user-list {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+.user-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.user-list-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.search-container {
+    position: relative;
+    max-width: 300px;
+}
+
+.search-input {
+    padding-right: 40px;
+    border-radius: 20px;
+}
+
+.search-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+}
+
+.add-user-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.add-user-btn:hover {
+    background-color: #45a049;
+    color: white;
+}
+
+.user-table-contain{
+    height: 585px;
+    overflow: auto;
+}
+.user-table-contain::-webkit-scrollbar{
+    width: 8px;
+}
+.user-table-contain::-webkit-scrollbar-thumb {
+    background-color: #d3d3d3;
+    border-radius: 4px;
+}
+
+.user-table th {
+    font-weight: 500;
+    color: #6c757d;
+    border-bottom: 1px solid #dee2e6;
+    padding: 12px 8px;
+}
+
+.user-table td {
+    padding: 12px 8px;
+    vertical-align: middle;
+}
+
+.user-table tbody tr:hover {
+    background-color: rgba(106, 13, 173, 0.15);
+}
+
+.client-info {
+    display: flex;
+    align-items: center;
+}
+
+.client-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    overflow: hidden;
+}
+
+.client-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-align: center;
+    width: 100px;
+}
+
+.status-confirmed {
+    background-color: rgba(25, 135, 84, 0.1);
+    color: #198754;
+}
+
+.status-canceled {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+.lock-btn{
+    height: 30px;
+    width: 30px;
+    border: none;
+    border-radius: 10px;
+    z-index: 101;
+}
+/*user stat*/
+.user-stat{
+    height: 500px;
+    overflow-y: auto;
+}
+.user-stat::-webkit-scrollbar {
+    width: 6px;
+}
+
+.user-stat::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #sidebar {
+        margin-left: calc(var(--sidebar-width) * -1);
+    }
+
+    #sidebar.active {
+        margin-left: 0;
+    }
+
+    #content {
+        margin-left: 0;
+    }
+
+    #content.expanded {
+        margin-left: 0;
+    }
+
+    #sidebarCollapse span {
+        display: none;
+    }
+}

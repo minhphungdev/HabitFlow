@@ -1,0 +1,80 @@
+<!-- Sidebar -->
+<nav id="sidebar">
+    <button id="sidebarCollapse" class="btn btn-link text-light me-2">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="sidebar-header">
+        <a class="navbar-brand" href="#">HabitFlow</a>
+    </div>
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/dashboard">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Tổng quan</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/users">
+                <i class="fas fa-users"></i>
+                <span>Người dùng</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/posts">
+                <i class="fa-solid fa-users-rectangle"></i>
+                <span>Quản lý cộng đồng</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/admin/achievements">
+                <i class="fa-solid fa-medal"></i>
+                <span>Quản lý thành tựu</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/home">
+                <i class="fa-solid fa-house-user"></i>
+                <span>HabitFlow</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle sidebar
+        var sidebarCollapse = document.getElementById('sidebarCollapse');
+        var sidebar = document.getElementById('sidebar');
+        var content = document.getElementById('content');
+
+        sidebarCollapse.addEventListener('click', function() {
+            sidebar.classList.toggle('collapsed');
+            content.classList.toggle('expanded');
+        });
+
+        // Activate current nav item
+        var navLinks = document.querySelectorAll('.nav-link');
+        navLinks.forEach(function(navLink) {
+            navLink.addEventListener('click', function() {
+                navLinks.forEach(function(link) {
+                    link.classList.remove('active');
+                });
+                navLink.classList.add('active');
+            });
+        });
+
+        // Handle responsive behavior
+        function handleResize() {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.add('collapsed');
+                content.classList.add('expanded');
+            }
+        }
+
+        // Trigger on page load
+        handleResize();
+
+        // Trigger on resize
+        window.addEventListener('resize', handleResize);
+    });
+</script>

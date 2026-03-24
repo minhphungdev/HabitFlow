@@ -1,0 +1,37 @@
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1050;" th:fragment="toastresponse">
+    <div id="responseToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="3000">
+        <div id="responseToastBody" class="toast-body">
+            <div class="coin-exchange" style="display: none">
+                <span class="me-2"></span><img src="/images/coin-icon.png" alt="coin" class="coin-icon">
+            </div>
+        </div>
+    </div>
+    <script th:inline="javascript">
+        // Toast for response entity
+        function showResponseToast(message, type) {
+            const toastEl = document.getElementById('responseToast');
+            const toastBody = document.getElementById('responseToastBody');
+
+            // Thêm class tương ứng với loại thông báo
+            if (type === 'success') {
+                toastBody.textContent = message;
+                toastBody.classList.add('text-bg-success');
+            } else if(type === 'exchange'){
+                document.querySelector('.coin-exchange span').textContent = `-${message}`;
+                document.querySelector('.coin-exchange').style.display = 'block';
+                toastBody.classList.add('text-bg-warning');
+            } else if(type === 'completeTask'){
+                document.querySelector('.coin-exchange span').textContent = `${message}`;
+                document.querySelector('.coin-exchange').style.display = 'block';
+                toastBody.classList.add('text-bg-warning');
+            }else {
+                toastBody.textContent = message;
+                toastBody.classList.add('text-bg-danger');
+            }
+
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+    </script>
+</div>
+

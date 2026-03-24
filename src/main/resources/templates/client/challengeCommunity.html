@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cộng Đồng Thử Thách - HabitFlow</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="/css/challenge_community.css">
+    <link rel="stylesheet" href="/css/layout.css">
+</head>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+<body>
+<div th:replace="layout/toastnotification.html :: toast(failed=${failed}, success=${success})"></div>
+
+<div th:replace="layout/toastresponse.html :: toastresponse"></div>
+
+<!-- Sidebar -->
+<div th:replace="layout/sidebar.html"></div>
+
+<!--check login-->
+<div th:replace="layout/checklogin.html"></div>
+
+<!-- Page Content -->
+<div id="content">
+    <!-- Header -->
+    <div class="app-header">
+        <div class="header-left">
+            <div class="page-title">Cộng Đồng Thử Thách</div>
+        </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content-area">
+        <button class="btn share-challenge-btn" id="shareChallenge" data-bs-toggle="modal" data-bs-target="#shareChallengeModal">
+            <i class="fas fa-share-alt"></i>
+            Chia sẻ thói thách của bạn
+        </button>
+
+        <!-- Search Bar -->
+        <div class="search-container d-flex justify-content-center w-100">
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="Search">
+                <button class="search-button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+        <div class="row">
+            <!-- Community Posts -->
+            <div class="col-md-7" id="communityPosts">
+                <div th:each="post : ${challengeShare}" class="community-post" th:onclick="|showChallengeDetail(${post.challenge.challengeId})|">
+                    <div class="post-header" >
+                        <img class="u-avatar" th:src="${post.user.avatar != null ? post.user.avatar : '/images/user_ava.png'}" th:alt="${post.user.avatar}"/>
+                        <div class="user-info">
+                            <div class="username" th:text="${post.user.userName}">user 1</div>
+                        </div>
+                    </div>
+
+                    <div class="challenge-title" th:text="${post.challenge.title}">Chơi Thể Thao</div>
+                    <div class="challenge-description" th:text="${post.challenge.description}">
+                        Mô tả: Duy trì chơi thể thao thay đổi hình thể
+                    </div>
+                    <div class="challenge-duration" th:text="'Thời gian: ' +${post.challenge.day}+ ' ngày'">20 Ngày</div>
+                    <div class="w-100 d-flex justify-content-between">
+                        <div class="participants-badge" th:text="${post.challenge.participantCount} + ' người tham gia'">
+                            2345 người tham gia
+                        </div>
+                        <div class="d-flex rounded-pill text-warning p-2 align-items-center">
+                            <span class="d-flex align-items-center fw-bold me-2" th:text="'Xu dự kiến: '+${post.challenge.coinEarnExpect}"></span>
+                            <img src="/images/coin-icon.png" style="height: 20px;width: 20px" alt="">
+                        </div>
+                    </div>
+                </div>
+                <!-- Empty State -->
+                <div id="emptyState" class="empty-state d-none w-100">
+                    <i class="fas fa-users"></i>
+                    <h4>Chưa có thử thách nào</h4>
+                    <p>Hãy là người đầu tiên chia sẻ thử thách của bạn với cộng đồng!</p>
+                </div>
+            </div>
+            <div class="col-md-5" id="rankingBoard">
+                <h4 class="fw-bold text-center w-100">Bảng Xếp Hạng Thử Thách Hoàn Thành</h4>
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th scope="col">STT</th>
+                        <th scope="col">Người dùng</th>
+                        <th scope="col">Thử thách hoàn thành</th>
+                    </tr>
+                    </thead>
+                    <tbody th:each="stats, iterStat :${userChallengeStats}">
+                    <tr>
+                        <th th:text="${iterStat.index + 1}">1</th>
+                        <td th:text="${stats.user.userName}">Mark</td>
+                        <td th:text="${stats.completedChallengesCount}">Otto</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <!-- Modal to view detailed information about a community challenge -->
+        <div class="modal fade" id="challengeDetailModal" tabindex="-1" aria-labelledby="challengeDetailModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="border-radius: 20px; overflow: hidden;">
+                    <!-- Modal Header with Challenge Info (Purple Gradient Background) -->
+                    <div class="modal-header text-white p-4" style="background: #4900F2; border: none;">
+                        <div class="container-fluid p-0">
+                            <!-- Challenge Title -->
+                            <div class="row">
+                                <div class="col-12 text-center mb-3">
+                                    <h3 class="modal-title fw-bold" id="challengeDetailTitle">Chơi Thể Thao</h3>
+                                </div>
+                            </div>
+
+                            <!-- Challenge Description Box -->
+                            <div class="row">
+                                <div class="col-12 text-center mb-3">
+                                    <textarea readonly class="challenge-modal-descrip rounded p-3" id="challengeDetailDescription">
+                                        Thay đổi thói quen trở nên lành mạnh
+                                    </textarea>
+                                </div>
+                            </div>
+
+                            <!-- Challenge Statistics -->
+                            <div class="row text-center d-flex justify-content-center">
+                                <div class="col-5">
+                                    <div class="text-warning fw-bold participants" id="challengeParticipants">2345 người tham gia</div>
+                                </div>
+                                <div class="col-5">
+                                    <div class="fw-bold" id="challengeDurationInfo">Thời gian: 7 ngày</div>
+                                </div>
+                            </div>
+
+                            <!-- View User Progress Link -->
+                            <div class="row mt-2">
+                                <div class="col-12 text-center">
+                                    <a href="#" class="text-white text-decoration-underline" id="viewUserProgress" >
+                                        Xem hành trình của người dùng
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Close Button -->
+                        <button type="button" class="btn-close btn-close-white position-absolute"
+                                style="top: 15px; right: 15px;" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <!-- Modal Body with Daily Tasks and Habits -->
+                    <div class="modal-body p-4">
+                        <!-- Daily Tasks Section -->
+                        <div class="mb-4">
+                            <h5 class="fw-bold mb-3">Hàng ngày</h5>
+                            <div id="dailyTasksList">
+                                <!-- Daily tasks will be populated here -->
+                            </div>
+                        </div>
+
+                        <!-- Habits Section -->
+                        <div class="mb-4">
+                            <h5 class="fw-bold mb-3">Thói quen</h5>
+                            <div id="habitsList">
+                                <!-- Habits will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Footer with Join Button -->
+                    <div class="modal-footer border-0 p-4">
+                        <button type="button" class="btn w-100 py-3 fw-bold text-dark"
+                                style="background-color: #ffc107; border-radius: 25px;" id="joinChallengeBtn">
+                            Tham gia
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+<!--        user detail modal-->
+        <div class="modal fade" id="challengeOverviewModal" tabindex="-1" aria-labelledby="challengeOverviewModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <!-- Modal Header with Challenge Info -->
+                    <div class="modal-header text-white p-4" style="background-color: #0049F2;">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-12 text-center mb-3">
+                                    <h2 class="modal-title fw-bold" id="challengeOverviewTitle">Thay Đổi Lối Sống</h2>
+                                </div>
+                            </div>
+                            <div class="row d-flex justify-content-center">
+                                <div class="col-8 text-center mb-3 ">
+                                    <div class="bg-light bg-opacity-25 rounded p-2 mt-1 challengeOverviewDescription" style="height: 50px" id="challengeOverviewDescription">
+                                        Thay đổi thói quen trở nên lành mạnh
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="w-100 d-flex justify-content-center">
+                                <p id="challengeStartDate" class="me-2 fw-bold"></p>đến<p id="challengeLastDate" class="ms-2 fw-bold"></p>
+                            </div>
+                            <hr class="bg-white opacity-50">
+                            <div class="row text-center">
+                                <div class="col-md-4">
+                                    <h5 class="display-6 fw-bold" id="bestStreak">5</h5>
+                                    <p class="mb-0">Chuỗi tốt nhất</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <h5 class="display-6 fw-bold" id="completionRate">74%</h5>
+                                    <p class="mb-0">Tỷ lệ hoàn thành</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <h5 class="display-6 fw-bold" id="totalHabits">42</h5>
+                                    <p class="mb-0">Tổng số thói quen thực hiện</p>
+                                </div>
+                            </div>
+                            <hr class="bg-white opacity-50">
+                        </div>
+                        <button type="button" class="btn-close btn-close-white position-absolute" style="top: 15px; right: 15px;" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="container-fluid">
+                            <!-- Line Chart -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="chart-container" style="position: relative; height:200px;">
+                                        <canvas id="habitCompletionChart"></canvas>
+                                    </div>
+                                    <p class="text-center mt-2 fw-bold">Biểu đồ hoàn thiện các thói quen</p>
+                                </div>
+                            </div>
+
+                            <!-- Donut Chart and Calendar -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="chart-container" style="position: relative; height:200px;">
+                                        <canvas id="habitProgressChart"></canvas>
+                                    </div>
+                                    <div class="d-flex justify-content-center mt-3 mb-3">
+                                        <div class="me-3">
+                                            <span class="badge rounded-pill" style="background-color: #0066ff;">&nbsp;</span>
+                                            <span>Chưa Hoàn Thành</span>
+                                        </div>
+                                        <div>
+                                            <span class="badge rounded-pill" style="background-color: #05ff12;">&nbsp;</span>
+                                            <span>Hoàn Thành</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-center fw-bold">Biểu đồ về tiến độ thói quen</p>
+                                </div>
+
+                                <div class="col-md-6 d-flex justify-content-between">
+                                    <!-- Calendar -->
+                                    <div class="calendar">
+                                        <div class="calendar__opts">
+                                            <select name="calendar__month" id="calendar__month">
+                                                <option th:each="month, stat : ${months}"
+                                                        th:value="${stat.count}"
+                                                        th:selected="${stat.count == currentMonth}"
+                                                        th:text="${month}"></option>
+                                            </select>
+
+                                            <select name="calendar__year" id="calendar__year">
+                                                <option th:each="year : ${#numbers.sequence(currentYear - 5, currentYear + 5)}"
+                                                        th:value="${year}"
+                                                        th:selected="${year == currentYear}"
+                                                        th:text="${year}"></option>
+                                            </select>
+                                        </div>
+
+                                        <div class="calendar__body">
+                                            <div class="calendar__days">
+                                                <div>Su</div>
+                                                <div>Mo</div>
+                                                <div>Tu</div>
+                                                <div>We</div>
+                                                <div>Th</div>
+                                                <div>Fr</div>
+                                                <div>Sa</div>
+                                            </div>
+                                            <div class="calendar__dates" id="calendarDates">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+<!--        share challenge-->
+        <div class="modal fade" id="shareChallengeModal" tabindex="-1" aria-labelledby="shareChallengeModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden;">
+                    <!-- Modal Header with Purple Gradient -->
+                    <div class="modal-header text-white text-center" style="background: linear-gradient(135deg, #0c34e7 0%, #764ba2 100%); border: none; padding: 30px 20px 20px;">
+                        <div class="w-100">
+                            <h4 class="modal-title fw-bold mb-2" id="shareChallengeModalLabel">Chia sẻ thử thách</h4>
+                            <p class="mb-0 opacity-75" id="shareableCount" th:text="'Thử thách có thể chia sẻ '+ ${userCompleteChallenge.size()}">Thử thách có thể chia sẻ: 3</p>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white position-absolute" style="top: 15px; right: 15px;" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <!-- Modal Body with Challenge Cards -->
+                    <div class="modal-body" style="padding: 20px; background-color: #f8f9fa;">
+                        <div id="shareableChallenges">
+                            <!-- Challenge Card 1 -->
+                            <div th:each="CompleteChallenge : ${userCompleteChallenge}" class="shareable-challenge-card mb-3" th:onclick="|showShareChallenge(${CompleteChallenge.challenge.challengeId})|">
+                                <div class="challenge-card-content">
+                                    <h5 class="challenge-name" th:text="${CompleteChallenge.challenge.title}">Chơi Thể Thao</h5>
+                                    <p class="challenge-desc" th:text="${CompleteChallenge.challenge.description}">Mô tả: Duy trì chơi thể thao thay đổi hình thể</p>
+                                    <div class="challenge-duration" th:text="${CompleteChallenge.challenge.day}+ ' Ngày'">20 Ngày</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+            <div class="modal fade" id="challengeDetailShareModal" style="background-color: rgba(44,44,44,0.69)" tabindex="-1" aria-labelledby="challengeDetailShareModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" style="">
+                    <div class="modal-content" style="border-radius: 20px; overflow: hidden;width: 100%">
+                        <!-- Modal Header with Challenge Info (Purple Gradient Background) -->
+                        <div class="modal-header text-white p-4" style="background: #4900F2; border: none;">
+                            <div class="container-fluid p-0">
+                                <!-- Challenge Title -->
+                                <div class="row">
+                                    <div class="col-12 text-center mb-3">
+                                        <h3 class="modal-title fw-bold" id="shareTitle">Chơi Thể Thao</h3>
+                                    </div>
+                                </div>
+
+                                <!-- Challenge Description Box -->
+                                <div class="row">
+                                    <div class="col-12 text-center mb-3">
+                                    <textarea readonly class="challenge-modal-descrip rounded p-3" id="ShareDescription">
+                                        Thay đổi thói quen trở nên lành mạnh
+                                    </textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modal Body with Daily Tasks and Habits -->
+                        <div class="modal-body p-4">
+                            <!-- Daily Tasks Section -->
+                            <div class="mb-4">
+                                <h5 class="fw-bold mb-3">Hàng ngày</h5>
+                                <div id="ShareDailyTasksList">
+                                    <!-- Daily tasks will be populated here -->
+                                </div>
+                            </div>
+
+                            <!-- Habits Section -->
+                            <div class="mb-4">
+                                <h5 class="fw-bold mb-3">Thói quen</h5>
+                                <div id="ShareHabitsList">
+                                    <!-- Habits will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modal Footer with Join Button -->
+                        <div class="modal-footer border-0 p-4">
+                            <button type="button" class="btn w-100 py-3 fw-bold text-dark"
+                                    style="background-color: #ffc107; border-radius: 25px;" id="Share" >
+                                Chia sẻ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="loading-spinner d-none">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const searchInput = document.querySelector('.search-input');
+        let debounceTimeout;
+        searchInput.addEventListener('keyup', function () {
+            clearTimeout(debounceTimeout);
+            debounceTimeout = setTimeout(() => {
+                const searchTerm = searchInput.value.toLowerCase();
+                const communityPosts = document.querySelectorAll('.community-post');
+                let hasResults = false;
+
+                communityPosts.forEach(function (post) {
+                    const challengeTitleElem = post.querySelector('.challenge-title');
+                    const challengeTitle = challengeTitleElem ? challengeTitleElem.textContent.toLowerCase() : "";
+
+                    if (challengeTitle.includes(searchTerm)) {
+                        post.style.display = '';
+                        hasResults = true;
+                    } else {
+                        post.style.display = 'none';
+                    }
+                });
+            }, 300); // Chờ 300ms sau khi ngừng nhập
+        });
+
+        // Function to show toast notifications
+        function showToast(message, type = 'info') {
+            // Create toast element
+            const toastId = 'toast-' + Date.now();
+            const toastHtml = `
+            <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} border-0"
+                 id="${toastId}" role="alert" aria-live="assertive" aria-atomic="true"
+                 style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        `;
+
+            document.body.insertAdjacentHTML('beforeend', toastHtml);
+
+            const toast = new bootstrap.Toast(document.getElementById(toastId));
+            toast.show();
+
+            // Remove toast element after it's hidden
+            document.getElementById(toastId).addEventListener('hidden.bs.toast', function() {
+                this.remove();
+            });
+        }
+
+        // Check if there are no posts and show empty state
+        if (document.querySelectorAll('.community-post').length === 0) {
+            document.getElementById('emptyState').classList.remove('d-none');
+        }
+
+        // Function to show challenge detail modal
+        window.showChallengeDetail = (challengeId)=> {
+            fetch(`/challenges/${challengeId}?creator=false`)
+                .then(response =>{
+                    if(response.url.includes("/login")){
+                        window.location.href = "/login";
+                        return;
+                    }
+                    return response.json()
+                }).then((challenge)=>{
+                    document.querySelector("#challengeDetailTitle").textContent = challenge.title;
+                    document.querySelector("#challengeDetailDescription").textContent = challenge.description;
+                    document.querySelector("#challengeParticipants").textContent = challenge.challengeParticipant + " người tham gia";
+                    document.querySelector("#challengeDurationInfo").textContent = "thời gian: "+challenge.day+" ngày";
+                    document.querySelector("#viewUserProgress").setAttribute("onclick",`DetailChallenge(${challenge.challengeId})`)
+                    document.querySelector("#joinChallengeBtn").setAttribute("onclick",`joinChallenge(${challenge.challengeId})`)
+
+                // Populate daily tasks (if available)
+                if (challenge.dailies) {
+                    document.querySelector('#dailyTasksList').innerHTML = ""
+                    let dailyTasksHtml = '';
+                    challenge.dailies.forEach(task => {
+                        dailyTasksHtml += `
+                            <div class="mb-3">
+                                <input type="text" class="form-control bg-light border-0 rounded-pill py-3"
+                                       placeholder="${task.title}" readonly style="background-color: #f0f0f0 !important;">
+                            </div>
+                        `;
+                    });
+                    document.querySelector('#dailyTasksList').innerHTML = dailyTasksHtml;
+                }
+
+                // Populate habits (if available)
+                if (challenge.habits) {
+                    document.querySelector('#habitsList').innerHTML = ""
+                    let habitsHtml = '';
+                    challenge.habits.forEach(habit => {
+                        let hiddenPositive = "block";
+                        let hiddenNegative = "block";
+                        if(habit.type === "POSITIVE"){
+                            hiddenNegative = "none"
+                        }else if(habit.type === "NEGATIVE"){
+                            hiddenPositive = "none"
+                        }
+                        habitsHtml += `
+                            <div class="bg-light rounded-pill p-3 mb-3 d-flex justify-content-between align-items-center">
+                                <span>${habit.title}</span>
+                                <div class="habit-toggles d-flex">
+                                    <button class="btn btn-success btn-sm rounded-circle" style="display:${hiddenPositive};width: 30px; height: 30px;">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                    <button class="btn btn-danger btn-sm rounded-circle ms-2" style="display:${hiddenNegative};width: 30px; height: 30px;">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    document.querySelector('#habitsList').innerHTML = habitsHtml;
+                }
+
+                const challengeDetailModal = new bootstrap.Modal(document.getElementById('challengeDetailModal'));
+                challengeDetailModal.show();
+            })
+                .catch(error => {
+                    console.error('Lỗi khi lấy dữ liệu thử thách:', error);
+                    alert('Không thể lấy dữ liệu thử thách. Do phiên đăng nhập hết hạn! Mời đăng nhập lại');
+                });
+        }
+
+        window.joinChallenge = (challengeId)=>{
+            fetch(`/challenge_community/join_challenge/${challengeId}`)
+                .then(response=>{
+                    if(response.url.includes("/login")){
+                        window.location.href = "/login"
+                        return;
+                    }
+                    return response.json();
+                }).then((message)=>{
+                bootstrap.Modal.getInstance(document.getElementById('challengeDetailModal')).hide();
+                showToast(message.message, message.type)
+            })
+        }
+
+        window.showShareChallenge = (challengeId)=> {
+            fetch(`/challenges/${challengeId}`)
+                .then(response =>{
+                    if(response.url.includes("/login")){
+                        window.location.href = "/login";
+                        return;
+                    }
+                    return response.json()
+                }).then((challenge)=>{
+                document.querySelector("#shareTitle").textContent = challenge.title;
+                document.querySelector("#ShareDescription").textContent = challenge.description;
+                document.querySelector("#Share").setAttribute("onclick",`shareChallenge(${challenge.challengeId})`)
+
+                // Populate daily tasks (if available)
+                if (challenge.dailies) {
+                    document.querySelector('#ShareDailyTasksList').innerHTML = ""
+                    let dailyTasksHtml = '';
+                    challenge.dailies.forEach(task => {
+                        dailyTasksHtml += `
+                            <div class="mb-3">
+                                <input type="text" class="form-control bg-light border-0 rounded-pill py-3"
+                                       placeholder="${task.title}" readonly style="background-color: #f0f0f0 !important;">
+                            </div>
+                        `;
+                    });
+                    document.querySelector('#ShareDailyTasksList').innerHTML = dailyTasksHtml;
+                }
+
+                // Populate habits (if available)
+                if (challenge.habits) {
+                    document.querySelector('#ShareHabitsList').innerHTML = ""
+                    let habitsHtml = '';
+                    challenge.habits.forEach(habit => {
+                        let hiddenPositive = "block";
+                        let hiddenNegative = "block";
+                        if(habit.type === "POSITIVE"){
+                            hiddenNegative = "none"
+                        }else if(habit.type === "NEGATIVE"){
+                            hiddenPositive = "none"
+                        }
+                        habitsHtml += `
+                            <div class="bg-light rounded-pill p-3 mb-3 d-flex justify-content-between align-items-center">
+                                <span>${habit.title}</span>
+                                <div class="habit-toggles d-flex">
+                                    <button class="btn btn-success btn-sm rounded-circle" style="display:${hiddenPositive};width: 30px; height: 30px;">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                    <button class="btn btn-danger btn-sm rounded-circle ms-2" style="display:${hiddenNegative};width: 30px; height: 30px;">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    document.querySelector('#ShareHabitsList').innerHTML = habitsHtml;
+                }
+
+                const challengeDetailModal = new bootstrap.Modal(document.getElementById('challengeDetailShareModal'));
+                challengeDetailModal.show();
+            })
+                .catch(error => {
+                    console.error('Lỗi khi lấy dữ liệu thử thách:', error);
+                    alert('Không thể lấy dữ liệu thử thách. Do phiên đăng nhập hết hạn! Mời đăng nhập lại');
+                });
+        }
+
+        window.shareChallenge = (challengeId)=>{
+            fetch(`/challenge_community/share/${challengeId}`)
+                .then(response=>{
+                    if(response.url.includes("/login")){
+                        window.location.href = "/login"
+                        return;
+                    }
+                    return response.json();
+                }).then((message)=>{
+                bootstrap.Modal.getInstance(document.getElementById('challengeDetailShareModal')).hide();
+                showToast(message.message, message.type)
+            })
+        }
+
+        // open modal detail user challenge
+        window.DetailChallenge = function(challengeId) {
+            showChallengeDetails(challengeId);
+        }
+
+        let completedDates = [];
+        function showChallengeDetails(challengeId) {
+            fetch(`/challenges/detail/challenge/${challengeId}?creator=false`)
+                .then(response=>{
+                    if(response.url.includes("/login")){
+                        window.location.href="/login"
+                        return;
+                    }
+                    return response.json()
+                })
+                .then(data => {
+                    // Update modal with challenge data
+                    document.getElementById('challengeOverviewTitle').textContent = data.title;
+                    document.getElementById('challengeOverviewDescription').textContent = data.description;
+                    document.getElementById('bestStreak').textContent = data.bestStreak;
+                    document.getElementById('completionRate').textContent = data.progress + '%';
+                    document.getElementById('totalHabits').textContent = data.totalCompletedTasks;
+                    document.getElementById("challengeStartDate").textContent = data.startDate;
+                    document.getElementById("challengeLastDate").textContent = data.endDate;
+
+                    // Initialize charts
+                    initLineChart(data.dailyProgresses);
+                    initDonutChart(data);
+
+                    // Initialize calendar
+                    completedDates = data.completedTasksList || [];
+                    initCalendar();
+
+                    // Show the modal
+                    const challengeModal = new bootstrap.Modal(document.getElementById('challengeOverviewModal'));
+                    challengeModal.show();
+                })
+                .catch(error => {
+                    console.error('Lỗi khi lấy dữ liệu thử thách:', error);
+                    alert('Không thể lấy dữ liệu thử thách. Do phiên đăng nhập hết hạn! Mời đăng nhập lại');
+                });
+        }
+
+        // Initialize line chart
+        function initLineChart(data) {
+            const ctx = document.getElementById('habitCompletionChart').getContext('2d');
+
+            // Destroy existing chart if it exists and has destroy method
+            if (window.habitCompletionChart && typeof window.habitCompletionChart.destroy === 'function') {
+                window.habitCompletionChart.destroy();
+            }
+
+            // Create new chart
+            window.habitCompletionChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(item => item.date),
+                    datasets: [{
+                        label: 'Tỷ lệ hoàn thành (%)',
+                        data: data.map(item => item.completionPercentage),
+                        fill: {
+                            target: 'origin',
+                            above: 'rgba(200, 220, 255, 0.5)',
+                        },
+                        borderColor: '#0066ff',
+                        tension: 0.4,
+                        pointBackgroundColor: '#0066ff',
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        zoom: {
+                            zoom: {
+                                wheel: {
+                                    enabled: true,
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                mode: 'x',
+                            },
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize donut chart
+        function initDonutChart(data) {
+            const ctx = document.getElementById('habitProgressChart').getContext('2d');
+
+            // Destroy existing chart if it exists and has destroy method
+            if (window.habitProgressChart && typeof window.habitProgressChart.destroy === 'function') {
+                window.habitProgressChart.destroy();
+            }
+
+            // Create new chart
+            window.habitProgressChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Chưa Hoàn Thành', 'Hoàn Thành'],
+                    datasets: [{
+                        data: [data.skippedTasks,data.completedTasks],
+                        backgroundColor: ['#0066ff', '#05ff12'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize calendar
+        function initCalendar() {
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth() + 1;
+
+            // Update dropdowns
+            document.getElementById('calendar__month').value = currentMonth;
+            document.getElementById('calendar__year').value = currentYear;
+
+            // Generate calendar for current month
+            generateCalendar(currentYear, currentMonth);
+        }
+
+        // Function to generate calendar for a specific month and year
+        function generateCalendar(year, month) {
+            const calendarDates = document.getElementById('calendarDates');
+            calendarDates.innerHTML = '';
+
+            const firstDay = new Date(year, month - 1, 1);
+            const lastDay = new Date(year, month, 0);
+
+            const firstDayOfWeek = firstDay.getDay(); // 0 = Sunday
+            const daysInMonth = lastDay.getDate();
+
+            // Previous month days
+            const prevMonthLastDay = new Date(year, month - 1, 0).getDate();
+            for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+                const greyDay = prevMonthLastDay - i;
+                const dateDiv = document.createElement('div');
+                dateDiv.className = 'calendar__date calendar__date--grey';
+                dateDiv.innerHTML = `<span>${greyDay}</span>`;
+                calendarDates.appendChild(dateDiv);
+            }
+
+            // Current month days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dateDiv = document.createElement('div');
+                dateDiv.className = 'calendar__date';
+                dateDiv.innerHTML = `<span>${day}</span>`;
+                dateDiv.setAttribute('data-date', dateStr);
+                dateDiv.addEventListener('click', function () {
+                    selectDay(dateStr, this);
+                });
+
+                // Highlight today
+                const today = new Date();
+                if (year === today.getFullYear() && month === today.getMonth() + 1 && day === today.getDate()) {
+                    dateDiv.classList.add('calendar__date--selected');
+                }
+
+                // Highlight completed dates
+                if (completedDates && completedDates.includes(dateStr)) {
+                    dateDiv.classList.add('calendar__date--completed');
+                }
+
+                calendarDates.appendChild(dateDiv);
+            }
+
+            // Next month days
+            const totalCellsUsed = firstDayOfWeek - 1 + daysInMonth;
+            const remainingCells = 42 - totalCellsUsed; // 6 rows x 7 columns = 42 cells
+            for (let i = 1; i <= remainingCells; i++) {
+                const dateDiv = document.createElement('div');
+                dateDiv.className = 'calendar__date calendar__date--grey';
+                dateDiv.innerHTML = `<span>${i}</span>`;
+                calendarDates.appendChild(dateDiv);
+            }
+        }
+
+        // Month and year change handlers
+        document.querySelectorAll('#calendar__month, #calendar__year').forEach(element => {
+            element.addEventListener('change', function() {
+                const selectedMonth = parseInt(document.getElementById('calendar__month').value, 10);
+                const selectedYear = parseInt(document.getElementById('calendar__year').value, 10);
+                generateCalendar(selectedYear, selectedMonth);
+            });
+        });
+    });
+
+</script>
+</body>
+</html>

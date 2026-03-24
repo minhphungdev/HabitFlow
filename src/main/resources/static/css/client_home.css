@@ -1,0 +1,358 @@
+:root {
+    --sidebar-width: 250px;
+    --sidebar-collapsed-width: 70px;
+    --primary-color: #5a67d8; /* Đổi từ #f7b924 */
+    --primary-hover: #4c51bf;
+    --dark-bg: #1a1a1a;
+    --light-bg: #f2f2f2;
+    --sidebar-bg: #f2f2f2;
+    --sidebar-color: #333;
+    --progress-bar-height: 8px;
+}
+
+body {
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-color: #fff;
+    font-family: "Nunito", sans-serif;
+}
+
+/* Navbar styles */
+.navbar {
+    height: 60px;
+    background-color: var(--dark-bg);
+    padding: 0 1rem;
+    z-index: 1030;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #fff !important;
+}
+
+/* Main content area */
+#content {
+    margin-left: var(--sidebar-width);
+    padding: 20px;
+    transition: all 0.3s;
+    min-height: 100vh;
+}
+
+#content.expanded {
+    margin-left: var(--sidebar-collapsed-width);
+}
+
+
+/* Welcome box */
+.welcome-box {
+    background-color: #f2f2f2;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+/* Calendar styles */
+.calendar {
+    --side-padding: 20px;
+    --border-radius: 10px;
+    --accent-br: 15px;
+    background-color: #fff;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.calendar__header {
+    padding: 15px var(--side-padding);
+    border-radius: 10px 10px 0px 0px;
+}
+
+.calendar__month-year {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.calendar__nav {
+    display: flex;
+    gap: 10px;
+}
+
+.calendar__nav-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #333;
+}
+
+.calendar__opts {
+    background-color: #fff;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 15px;
+    padding: 15px var(--side-padding);
+    border-top-left-radius: var(--border-radius);
+    border-top-right-radius: var(--border-radius);
+}
+
+select {
+    background-color: #f3f4f6;
+    padding: 10px 30px 10px 15px;
+    border-radius: 20px;
+    border: none;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.9rem;
+    -webkit-appearance: none;
+}
+
+.calendar__body {
+    background-color: #fff;
+}
+
+.calendar__days {
+    padding: 10px var(--side-padding);
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.calendar__days > div {
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #888;
+    padding: 5px 0;
+}
+
+.calendar__dates {
+    padding: 0 var(--side-padding) 15px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.calendar__date {
+    text-align: center;
+    height: 40px;
+    line-height: 40px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    position: relative;
+    border-radius: 20%;
+    margin: 2px;
+}
+
+.calendar__date:not(.calendar__date--grey):hover {
+    background-color: #f0f0f0;
+}
+
+.calendar__date--grey {
+    color: #ccc;
+    cursor: not-allowed;
+}
+
+.calendar__date--selected {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.info-box {
+    margin-top: 10px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    border-radius: 10px;
+    text-align: center;
+}
+
+/* Habit cards */
+.habits-section {
+    margin-bottom: 20px;
+}
+
+.habit-card {
+    background-color: #f2f2f2;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+    color: #1a1a1a;
+}
+
+.habit-card:hover {
+    transform: translateY(-5px);
+}
+
+.habit-progress {
+    width: 60px;
+    height: 60px;
+    position: relative;
+    margin-right: 15px;
+}
+
+.habit-progress svg {
+    width: 100%;
+    height: 100%;
+}
+
+.habit-progress svg circle {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+    transform: translate(4px, 4px);
+}
+
+.habit-progress svg circle.background {
+    stroke: #e9ecef;
+}
+
+.habit-progress svg circle.progress {
+    stroke: var(--primary-color);
+    stroke-dasharray: 314.16;
+    stroke-dashoffset: calc(314.16 - (314.16 * var(--progress)) / 100);
+    transition: stroke-dashoffset 0.5s ease;
+}
+
+.habit-progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.habit-info {
+    flex: 1;
+}
+
+.habit-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.habit-tasks {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* Rewards section */
+.rewards-section {
+    background-color: #f2f2f2;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.rewards-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.rewards-title {
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.add-reward-btn {
+    background-color: #f0f0f0;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 15px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+}
+.rewards-contain {
+    max-height: calc(4 * 62px); /*  reward-item: 50px + 12px (margin-bottom) */
+    overflow-y: auto;
+}
+
+.rewards-contain::-webkit-scrollbar {
+    width: 8px;
+}
+
+.rewards-contain::-webkit-scrollbar-thumb {
+    background-color: #d3d3d3;
+    border-radius: 4px;
+}
+
+.reward-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    height: 50px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.reward-title {
+    font-weight: 600;
+    font-size: 16px;
+    color: #222;
+}
+
+.reward-points {
+    border: none;
+    background-color: #e0e7ff; /* Đổi từ vàng #ffedb4 sang xanh nhạt */
+    min-width: 18%;
+    max-width: 18%;
+    height: 100%;
+    overflow-y: hidden;
+    color: #1a1a1a;
+}
+.reward-points::-webkit-scrollbar{
+    display: none;
+}
+
+.reward-name{
+    background: none;
+    text-decoration: none;
+    color: #1a1a1a;
+    width: 82%;
+    height: 100%;
+    padding: 15px 15px 15px 30px ;
+}
+
+.coin-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.system-reward-item{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    height: 70px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+/*calendar-content*/
+.tasks-contain{
+    max-height: calc(2 * 62px);
+    overflow-y: auto;
+}
+
+.tasks-contain::-webkit-scrollbar {
+    width: 8px;
+}
+
+.tasks-contain::-webkit-scrollbar-thumb {
+    background-color: #d3d3d3;
+    border-radius: 4px;
+}

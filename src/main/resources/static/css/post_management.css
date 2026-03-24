@@ -1,0 +1,270 @@
+:root {
+    --sidebar-width: 250px;
+    --sidebar-collapsed-width: 70px;
+    --topbar-height: 60px;
+    --primary-color: #5a67d8; /* Đổi từ #f7b924 */
+    --primary-hover: #4c51bf;
+    --dark-bg: #1a1a1a;
+    --light-bg: #f2f2f2;
+    --sidebar-bg: #2c2c2c;
+    --sidebar-color: #e0e0e0;
+}
+
+body {
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-color: #f5f5f5;
+}
+/* Main content area */
+#content {
+    margin-left: var(--sidebar-width);
+    padding: 20px;
+    transition: all 0.3s;
+    min-height: calc(100vh - var(--topbar-height));
+}
+
+#content.expanded {
+    margin-left: var(--sidebar-collapsed-width);
+}
+
+/* Page title */
+.page-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* Post list section */
+.post-list-container {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.post-list-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.post-contain{
+    height: calc(84px*8);
+    overflow-y: auto;
+}
+
+.post-contain::-webkit-scrollbar{
+    width:6px
+}
+
+.post-contain::-webkit-scrollbar-thumb{
+    background-color: #d3d3d3;
+    border-radius: 4px;
+}
+
+.post-item {
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.post-item:last-child {
+    border-bottom: none;
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.author-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    margin-right: 15px;
+    overflow: hidden;
+}
+
+.author-avatar img{
+    width: 40px;
+    height: 40px;
+}
+
+.post-author-info {
+    flex: 1;
+}
+
+.post-author {
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.post-date {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.post-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.post-content {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.post-stats {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.post-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.post-stat-icon {
+    color: #6c757d;
+}
+
+.progress {
+    height: 6px;
+    width: 100px;
+    margin: 0 10px;
+}
+
+/* Pending posts section */
+.pending-posts-container {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+}
+
+.pending-contain{
+    height: calc(84px*5);
+    overflow-y: auto;
+}
+.pending-contain::-webkit-scrollbar{
+    width: 6px;
+}
+.pending-contain::-webkit-scrollbar-thumb{
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+.pending-post-item{
+    cursor: pointer;
+}
+
+.pending-posts-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    background-color: #e9ecef;
+    padding: 10px 15px;
+    border-radius: 4px;
+}
+
+.pending-post-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.pending-post-item:last-child {
+    border-bottom: none;
+}
+
+.pending-post-info {
+    flex: 1;
+}
+
+.pending-post-author {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.pending-post-title {
+    color: #6c757d;
+}
+
+.pending-post-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.btn-approve {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.btn-approve:hover {
+    background-color: #218838;
+    color: white;
+}
+
+.btn-edit {
+    background-color: #ffc107;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.btn-edit:hover {
+    background-color: #e0a800;
+    color: white;
+}
+
+.btn-delete {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.btn-delete:hover {
+    background-color: #c82333;
+    color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #sidebar {
+        margin-left: calc(var(--sidebar-width) * -1);
+    }
+
+    #sidebar.active {
+        margin-left: 0;
+    }
+
+    #content {
+        margin-left: 0;
+    }
+
+    #content.expanded {
+        margin-left: 0;
+    }
+
+    #sidebarCollapse span {
+        display: none;
+    }
+}

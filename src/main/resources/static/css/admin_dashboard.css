@@ -1,0 +1,77 @@
+
+:root {
+    --sidebar-width: 250px;
+    --sidebar-collapsed-width: 70px;
+    --topbar-height: 60px;
+    --primary-color: #5a67d8; /* Đổi từ #f7b924 */
+    --primary-hover: #4c51bf; /* Đổi từ #e5a91f */
+    --dark-bg: #1a1a1a;
+    --light-bg: #f2f2f2;
+    --sidebar-bg: #2c2c2c;
+    --sidebar-color: #e0e0e0;
+}
+
+body {
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-color: #f5f5f5;
+}
+
+/* Main content area */
+#content {
+    margin-left: var(--sidebar-width);
+    padding: 20px;
+    transition: all 0.3s;
+    min-height: calc(100vh - var(--topbar-height));
+}
+
+#content.expanded {
+    margin-left: var(--sidebar-collapsed-width);
+}
+
+/* Dashboard cards */
+.dashboard-card {
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+    height: 100%;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+}
+
+.card-icon {
+    font-size: 2rem;
+    background-color: rgba(90, 103, 216, 0.2); /* Đổi từ rgba vàng */
+    color: var(--primary-color);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #sidebar {
+        margin-left: calc(var(--sidebar-width) * -1);
+    }
+
+    #sidebar.active {
+        margin-left: 0;
+    }
+
+    #content {
+        margin-left: 0;
+    }
+
+    #content.expanded {
+        margin-left: 0;
+    }
+
+    #sidebarCollapse span {
+        display: none;
+    }
+}

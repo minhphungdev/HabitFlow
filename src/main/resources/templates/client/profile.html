@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ Sơ - HabitFlow</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="/css/profile.css">
+    <link rel="stylesheet" href="/css/layout.css">
+</head>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<body>
+<div th:replace="layout/toastnotification.html :: toast(failed=${failed}, success=${success})"></div>
+
+<div th:replace="layout/toastresponse.html :: toastresponse"></div>
+
+<!-- Include sidebar from existing template -->
+<div th:replace="layout/sidebar.html"></div>
+
+<!--check login-->
+<div th:replace="layout/checklogin.html"></div>
+
+<!-- Page Content -->
+<div id="content">
+    <!-- Header -->
+    <div class="app-header">
+        <div class="header-left">
+            <div class="page-title">Hồ sơ</div>
+        </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content-area">
+        <!-- Profile Section -->
+        <div class="profile-section d-flex justify-content-between">
+            <div class="profile-header">
+                <div class="profile-avatar" >
+                    <img th:src="${user.avatar==null?'/images/user_ava.png':user.avatar}" alt="">
+                </div>
+                <div class="profile-info">
+                    <div class="w-100 d-flex">
+                        <div class="achievement-icon" th:style="'background-color: ' + ${userAchievement.color}">
+                            <i th:class="${userAchievement.icon}"></i>
+                        </div>
+                        <div class="profile-title align-content-center" th:text="'Danh hiệu: ' + ${userAchievement.title}">Danh hiệu: Người mới bắt đầu</div>
+                    </div>
+                    <div class="profile-username" th:text="'Người dùng: ' + ${user.userName}">Người dùng: user</div>
+                    <div class="profile-email" th:text="'Email: ' + ${user.email}">Email: User@gmail.com</div>
+                    <div class="gold-badge">
+                        <img src="/images/coin-icon.png" alt="coin" class="coin-icon">
+                        <span th:text="${user.coins} + ' Xu'">100 Xu</span>
+                    </div>
+
+                </div>
+            </div>
+            <div class="d-flex flex-column justify-content-between align-items-end">
+                <button class="btn edit-profile-btn" id="editProfile">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <div>
+                    <p class="text-muted" th:text="'Giới hạn thử thách: '+${user.challengeLimit}"></p>
+                    <p class="text-muted" th:text="'Giới hạn thói quen: '+${user.taskLimit}"></p>
+                </div>
+            </div>
+
+
+        </div>
+
+        <!-- Statistics Grid -->
+        <div class="stats-grid">
+            <!-- Participating Challenges -->
+            <div class="stat-card" data-bs-target="#participateChallengeModal" data-bs-toggle="modal">
+                <div class="stat-title">Thử Thách Đang Tham gia</div>
+                <div class="stat-value" th:text="${participatingChallenges.size()}">12</div>
+            </div>
+
+            <!-- Longest Streak -->
+            <div class="stat-card" data-bs-toggle="modal" data-bs-target="#bestStreakStatsModal">
+                <div class="stat-title">Streak dài nhất</div>
+                <div class="stat-value" th:text="${longestStreakChallenge != null && longestStreakChallenge.bestStreak != null ? longestStreakChallenge.bestStreak : 0}">20</div>
+
+                <div class="stat-subtitle" th:text="${longestStreakChallenge != null ? 'Của thử thách ' + longestStreakChallenge.challenge.title : ''}"></div>
+
+            </div>
+
+            <!-- Journal Entries -->
+            <div class="stat-card" data-bs-target="#diaryModal" data-bs-toggle="modal">
+                <div class="stat-title">Nhật ký</div>
+                <div class="stat-value" th:text="${journalEntries.size()}">12</div>
+                <div class="stat-subtitle">Bài viết</div>
+            </div>
+
+            <!-- Leaderboard Rank -->
+            <div class="stat-card rank-card">
+                <div class="stat-title">Thứ tự trên bảng xếp hạng</div>
+                <div class="stat-value" th:text="${rankUser != null ? rankUser:'Chưa xếp hạng'}">12</div>
+                <div class="stat-subtitle">Bảng xếp hạng các thử thách đã hoàn thành</div>
+            </div>
+
+            <!-- Completed Tasks -->
+            <div class="stat-card" data-bs-toggle="modal" data-bs-target="#taskCompletionModal">
+                <div class="stat-title">Task đã hoàn thành từ khi tham gia</div>
+                <div class="stat-value" th:text="${completedTask}">120</div>
+            </div>
+
+            <!-- Completed Challenges -->
+            <div class="stat-card" data-bs-toggle="modal" data-bs-target="#completeChallengeModal">
+                <div class="stat-title">Thử Thách Đã hoàn thành</div>
+                <div class="stat-value" th:text="${completedChallenges.size()}">5</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="border-radius: 15px; border: none;">
+            <div style="background-color: #f8f9fa; border-bottom: none; padding: 25px 30px 15px;">
+                <h4 class="modal-title fw-bold" id="editProfileModalLabel" style="color: #333;">Thông tin</h4>
+            </div>
+            <div class="modal-body" style="padding: 20px 30px 30px; background-color: #f8f9fa;">
+                <!-- Profile Photo Section -->
+
+                <form id="editProfileForm" th:action="@{/profile/update}" method="post" th:object="${newUser}" enctype="multipart/form-data">
+                    <div class="text-center mb-4">
+                        <div class="profile-photo-container position-relative d-inline-block">
+                            <div class="profile-avatar">
+                                <img th:src="${user.avatar==null?'/images/user_ava.png':user.avatar}" alt="Avatar" id="avatarImg">
+                            </div>
+                            <!-- Input file để chọn ảnh -->
+                            <input type="file" id="fileInput" style="display: none;" name="image" accept="image/*">
+                        </div>
+                        <div class="mt-2">
+                            <a href="#" class="text-muted" style="font-size: 0.9rem; text-decoration: none;" onclick="document.getElementById('fileInput').click();">
+                                <i class="fas fa-edit me-1"></i> Thay đổi
+                            </a>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <input type="text" style="display: none" class="form-control edit-profile-input" id="userId" th:field="*{userId}" required>
+                            <label for="editFirstName" class="form-label text-muted text-uppercase" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px;">Người dùng</label>
+                            <input type="text" class="form-control edit-profile-input" id="editFirstName" th:field="*{userName}" required>
+                        </div>
+<!--                        <div class="col-md-6">-->
+<!--                            <label for="editLastName" class="form-label text-muted text-uppercase" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px;">Last Name</label>-->
+<!--                            <input type="text" class="form-control edit-profile-input" id="editLastName" th:text="${user.}"  required>-->
+<!--                        </div>-->
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="editEmailAddress" class="form-label text-muted text-uppercase" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px;">Địa chỉ Email</label>
+                        <input type="email" readonly class="form-control edit-profile-input" id="editEmailAddress" th:field="*{email}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="achieveSelected"  class="form-label">Thành tựu</label>
+                        <select class="form-control"  id="achieveSelected" th:field="*{achieveId}">
+                            <option th:each="achievement : ${achievements}" th:value="${achievement.achievement.achievementId}" th:text="${achievement.achievement.title}"></option>
+                        </select>
+                    </div>
+                    <div style="width: 100%;text-align: center;">
+                        <a href="#" class="text-change-password" style="  font-size: 0.9rem; " data-bs-toggle="modal" data-bs-target="#changePassword">Thay đổi mật khẩu</a>
+                    </div>
+
+                    <div class="modal-footer" style="background-color: #f8f9fa; border-top: none; padding: 20px 30px 30px; justify-content: center; gap: 15px;">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="background-color: white; border: 1px solid #dee2e6; color: #6c757d; padding: 12px 30px; border-radius: 25px; font-weight: 500; min-width: 120px;">
+                            <i class="fas fa-times me-2"></i>Hủy
+                        </button>
+                        <button type="submit" class="btn btn-success" id="saveProfile" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); border: none; padding: 12px 30px; border-radius: 25px; font-weight: 500; min-width: 120px;">
+                            <i class="fas fa-check me-2"></i>Lưu
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--modal change password-->
+<div class="modal fade" id="changePassword" tabindex="-1" aria-labelledby="changePasswordLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="border-radius: 15px; border: none;">
+            <div style="background-color: #f8f9fa; border-bottom: none; padding: 25px 30px 15px;">
+                <h4 class="modal-title fw-bold" id="changePasswordLabel" style="color: #333;">Thay đổi mật khẩu</h4>
+            </div>
+            <div class="modal-body" style="padding: 20px 30px 30px; background-color: #f8f9fa;">
+                <div id="error-message" class="alert alert-danger" style="display: none;">
+                    <strong>Thất bại!</strong> Mật khẩu không hợp lệ hoặc có lỗi xảy ra. Vui lòng thử lại.
+                </div>
+
+                <form id="changePasswordForm" th:action="@{/change_password}" method="post" th:object="${changePassword}">
+                    <input type="text" style="display: none" class="form-control edit-profile-input" id="userChangePassId" th:field="*{userId}" required>
+                    <div class="mb-4" th:if="*{!isJustLoginWithGoogle()}">
+                        <label for="OldPassword" class="form-label text-muted text-uppercase" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px;">Mật khẩu cũ</label>
+                        <input type="text" class="form-control edit-profile-input" id="OldPassword" th:field="*{oldPassword}">
+                    </div>
+                    <div class="mb-4">
+                        <label for="newPassword" class="form-label text-muted text-uppercase" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px;">Mật khẩu mới</label>
+                        <input type="text" class="form-control edit-profile-input" id="newPassword" th:field="*{password}"  >
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="confirmPassword" class="form-label text-muted text-uppercase" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px;">Xác nhận mật khẩu</label>
+                        <input type="text" class="form-control edit-profile-input" id="confirmPassword" th:field="*{confirmPassword}"  >
+                    </div>
+
+                    <div class="modal-footer" style="background-color: #f8f9fa; border-top: none; padding: 20px 30px 30px; justify-content: center; gap: 15px;">
+                        <button type="submit" class="btn btn-success" id="save" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); border: none; padding: 12px 30px; border-radius: 25px; font-weight: 500; min-width: 120px;">
+                            <i class="fas fa-check me-2"></i>Lưu
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--modal active challenge -->
+<div class="modal fade" id="participateChallengeModal" tabindex="-1" aria-labelledby="participateChallengeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden;">
+            <!-- Modal Header with Purple Gradient -->
+            <div class="modal-header text-white text-center" style="background: linear-gradient(90deg, #00C9FF 0%, #92FE9D 100%); border: none; padding: 30px 20px 20px;">
+                <div class="w-100">
+                    <h4 class="modal-title fw-bold mb-2" id="participateChallengeModalLabel">Thử thách đang tham gia</h4>
+                    <p class="mb-0 opacity-75" id="participateCount" th:text="'Thử thách đang tham gia '+ ${participatingChallenges.size()}">Thử thách có thể chia sẻ: 3</p>
+                </div>
+                <button type="button" class="btn-close btn-close-white position-absolute" style="top: 15px; right: 15px;" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <!-- Modal Body with Challenge Cards -->
+            <div class="modal-body" style="padding: 20px; background-color: #f8f9fa;">
+                <div class="challenge-contain">
+                    <!-- Challenge Card 1 -->
+                    <div th:each="challenge : ${participatingChallenges}" style="background: linear-gradient(90deg, #00C9FF 0%, #92FE9D 100%);" class="challenge-card mb-3" >
+                        <div class="challenge-card-content">
+                            <h5 class="challenge-name" th:text="${challenge.challenge.title}">Chơi Thể Thao</h5>
+                            <p class="challenge-desc" th:text="${challenge.challenge.description}">Mô tả: Duy trì chơi thể thao thay đổi hình thể</p>
+                            <div class="challenge-duration" th:text="${challenge.challenge.day}+ ' Ngày'">20 Ngày</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!--modal complete challenge -->
+<div class="modal fade" id="completeChallengeModal" tabindex="-1" aria-labelledby="completeChallengeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden;">
+            <!-- Modal Header with Purple Gradient -->
+            <div class="modal-header text-white text-center" style="background: linear-gradient(90deg, #00d2ff 0%, #3a47d5 100%); border: none; padding: 30px 20px 20px;">
+                <div class="w-100">
+                    <h4 class="modal-title fw-bold mb-2" id="completeChallengeModalLabel">Thử thách đã hoàn thành</h4>
+                    <p class="mb-0 opacity-75" id="completeCount" th:text="'Thử thách đã hoàn thành: '+ ${completedChallenges.size()}"></p>
+                </div>
+                <button type="button" class="btn-close btn-close-white position-absolute" style="top: 15px; right: 15px;" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <!-- Modal Body with Challenge Cards -->
+            <div class="modal-body" style="padding: 20px; background-color: #f8f9fa;">
+                <div class="challenge-contain">
+                    <!-- Challenge Card 1 -->
+                    <div th:each="challenge : ${completedChallenges}" style="background: linear-gradient(90deg, #00d2ff 0%, #3a47d5 100%);" class="challenge-card mb-3" >
+                        <div class="challenge-card-content" th:onclick="|openChallengeStats(${challenge.challenge.challengeId},${challenge.userChallengeId})|">
+                            <h5 class="challenge-name" th:text="${challenge.challenge.title}"></h5>
+                            <p class="challenge-desc" th:text="${challenge.challenge.description}"></p>
+                            <div class="challenge-duration" th:text="${challenge.challenge.day}+ ' Ngày'"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--challenge Complete modal detail-->
+<div class="modal fade" id="challengeStatsModal" tabindex="-1" aria-labelledby="challengeStatsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content " style="border-radius: 15px; overflow: hidden;">
+            <!-- Modal Header -->
+            <div class="modal-header text-white p-4" style="background-color: #24CC8F; border: none;">
+                <h5 class="modal-title w-100 text-center fw-bold" id="challengeStatsModalLabel"></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body p-5">
+                <!-- Main Stats Card -->
+                <div class="card mb-4" style="border-radius: 15px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <div class="card-body text-center p-4">
+                        <div class="w-100 d-flex justify-content-center fw-bold">
+                            <span id="challengeDate">ngay</span>
+                        </div>
+                        <!-- Circular Progress -->
+                        <div class="d-flex justify-content-center mb-3">
+                            <h1 class="fw-bold text-success mb-0" id="progressPercentage" >73%</h1>
+                        </div>
+                        <p class="text-muted mb-0">Tỷ lệ hoàn thành</p>
+
+                        <!-- Streak Number -->
+                        <div class="mb-3">
+                            <h3 class="display-3 fw-bold text-success mb-0" id="streakNumber" >11</h3>
+                            <p class="text-muted mb-3">Streak dài nhất</p>
+                        </div>
+
+                        <div class="d-flex justify-content-center mb-3">
+                            <h1 class="fw-bold text-success mb-0" id="evaluationRate" >73%</h1>
+                        </div>
+                        <p class="text-muted mb-0">Đánh giá tổng thể sự tiến bộ</p>
+
+                    </div>
+                </div>
+
+                <!-- Detailed Statistics -->
+                <div class="mb-3 d-flex justify-content-between">
+                    <h6 class="fw-bold text-dark">Thống kê chi tiết</h6>
+                    <button class="text-decoration-underline border-0 bg-transparent text-info" id="diaryDuringChallenge">Nhật ký</button>
+                </div>
+
+                <div class="row g-3">
+                    <!-- Completed Tasks -->
+                    <div class="col-12">
+                        <div class="card h-100" style="border-radius: 12px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                            <div class="card-body d-flex align-items-center p-3">
+                                <div class="me-3">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                         style="width: 40px; height: 40px; background-color: #e3f2fd;">
+                                        <i class="fas fa-check text-primary"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h5 class="fw-bold mb-0" id="completedTasks" >42</h5>
+                                    <small class="text-muted">Thói quen hoàn thành</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total Tasks -->
+                    <div class="col-12">
+                        <div class="card h-100" style="border-radius: 12px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                            <div class="card-body d-flex align-items-center p-3">
+                                <div class="me-3">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                         style="width: 40px; height: 40px; background-color: #fff3e0;">
+                                        <i class="fas fa-folder text-warning"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h5 class="fw-bold mb-0" id="totalTasks" >58</h5>
+                                    <small class="text-muted">Tổng nhiệm vụ</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Skipped Tasks -->
+                    <div class="col-12">
+                        <div class="card h-100" style="border-radius: 12px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                            <div class="card-body d-flex align-items-center p-3">
+                                <div class="me-3">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                         style="width: 40px; height: 40px; background-color: #ffebee;">
+                                        <i class="fas fa-times-circle text-danger"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h5 class="fw-bold mb-0" id="skippedTasks" >5</h5>
+                                    <small class="text-muted">Nhiệm vụ bỏ qua</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="col-12">
+                        <div class="card h-100" style="border-radius: 12px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                            <div class="card-body d-flex align-items-center p-3">
+                                <div class="me-3">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                         style="width: 40px; height: 40px; background-color: #e8f5e8;">
+                                        <i class="fa-solid fa-calendar-days text-success"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h5 class="fw-bold mb-0 text-success" id="challengeDay"></h5>
+                                    <small class="text-muted">Thời gian thực hiện</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="diaryListModal" tabindex="-1" aria-labelledby="diaryListModalLabel" style="background-color: rgba(85,85,85,0.71)" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" >
+            <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden;">
+                <div class="modal-header text-white text-center" style="background: #0069d3; border: none; padding: 30px 20px 20px;">
+                    <div class="w-100">
+                        <h4 class="modal-title fw-bold mb-2" id="diaryListModalLabel">Nhật ký trong thử thách</h4>
+                        <p class="mb-0 opacity-75" id="diaryListCount"></p>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white position-absolute" style="top: 15px; right: 15px;" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="padding: 20px; background-color: #f8f9fa;">
+                    <div id="diaryListContainer" class="challenge-contain" style="max-height: 400px; overflow-y: auto; overflow-x: hidden">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="diaryDetailModal" style="background-color: rgba(85,85,85,0.71)" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header text-bg-warning p-4">
+                    <div class="w-100">
+                        <h4 class="fw-bold mb-3">Chi tiết Nhật ký</h4>
+                        <div class="mb-3">
+                            <label for="diaryDetailContentInput" class="form-label">Nội dung</label>
+                            <textarea class="form-control" readonly id="diaryDetailContentInput" rows="5"></textarea>
+                        </div>
+                        <div class="d-flex justify-content-center w-100">
+                            <img id="diaryDetailImagePreview" class="img-fluid mt-1" style="max-width: 300px; max-height: 400px; display: none;" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-body p-4">
+                    <strong>Task đã hoàn thành vào ngày này:</strong>
+                    <ul id="diaryDetailCompletedTasksList"></ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--modal diary -->
+<div class="modal fade" id="diaryModal" tabindex="-1" aria-labelledby="diaryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden;">
+            <!-- Modal Header with Purple Gradient -->
+            <div class="modal-header text-white text-center" style="background: linear-gradient(90deg, #d53369 0%, #daae51 100%); border: none; padding: 30px 20px 20px;">
+                <div class="w-100">
+                    <h4 class="modal-title fw-bold mb-2" id="diaryModalLabel">Nhật ký</h4>
+                    <p class="mb-0 opacity-75" id="diaryCount" th:text="'Bạn đã viết '+ ${journalEntries.size()}"></p>
+                </div>
+                <button type="button" class="btn-close btn-close-white position-absolute" style="top: 15px; right: 15px;" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <!-- Modal Body with Challenge Cards -->
+            <div class="modal-body" style="padding: 20px; background-color: #f8f9fa;">
+                <div class="challenge-contain">
+                    <!-- Challenge Card 1 -->
+                    <div th:each="journal : ${journalEntries}" style="background: linear-gradient(90deg, #d53369 0%, #daae51 100%)" class="challenge-card mb-3" >
+                        <div class="challenge-card-content" th:onclick="|openDiaryUpdateModal(${journal.diaryId})|">
+                            <h5 class="challenge-name" th:text="${journal.date}">Chơi Thể Thao</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--best streak challenge modal-->
+<div class="modal fade" id="bestStreakStatsModal" tabindex="-1" aria-labelledby="bestStreakStatsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 15px; overflow: hidden;">
+            <!-- Modal Header -->
+            <div class="modal-header text-white p-4" style="background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%); border: none;">
+                <h5 class="modal-title w-100 text-center fw-bold" id="bestStreakStatsModalLabel" th:text="${longestStreakChallenge !=null?'Chi tiết Thử thách '+longestStreakChallenge.challenge.title:''}"></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body p-4" style="background-color: #f5f5f5;" th:if="${longestStreakChallenge!=null}">
+                <!-- Main Stats Card -->
+                <div class="card mb-4" style="border-radius: 15px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <div class="card-body text-center p-4">
+                        <!-- Streak Number -->
+                        <div class="mb-3">
+                            <h1 class="display-3 fw-bold text-danger mb-0" th:text="${longestStreakChallenge.bestStreak}">11</h1>
+                            <p class="text-muted mb-3">Streak dài nhất</p>
+                        </div>
+
+                        <!-- Circular Progress -->
+                        <div class="d-flex justify-content-center mb-3">
+                            <div class="position-relative" style="width: 120px; height: 120px;">
+                                <svg width="120" height="120" >
+                                    <!-- Background circle -->
+                                    <circle cx="60" cy="60" r="50" fill="none" stroke="#e9ecef" stroke-width="8"></circle>
+                                    <!-- Progress circle -->
+                                    <circle cx="60" cy="60" r="50" fill="none" stroke="#ff4757" stroke-width="8"
+                                            stroke-linecap="round" id="progressCircle"
+                                            th:style="'--progress: ' + ${longestStreakChallenge.progress}"></circle>
+                                </svg>
+                                <div class="position-absolute top-50 start-50 translate-middle">
+                                    <h3 class="fw-bold text-danger mb-0" th:text="${longestStreakChallenge.progress}+'%'">73%</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-muted mb-0">Quá trình hoàn thành</p>
+                    </div>
+                </div>
+
+                <!-- Detailed Statistics -->
+                <div class="mb-3 d-flex justify-content-between">
+                    <h6 class="fw-bold text-dark">Thống kê chi tiết</h6>
+<!--                    <button class="text-decoration-underline border-0 bg-transparent text-info" id="diaryDuringChallenge">Nhật ký</button>-->
+                </div>
+
+                <div class="row g-3">
+                    <!-- Completed Tasks -->
+                    <div class="col-12">
+                        <div class="card h-100" style="border-radius: 12px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                            <div class="card-body d-flex align-items-center p-3">
+                                <div class="me-3">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                         style="width: 40px; height: 40px; background-color: #e3f2fd;">
+                                        <i class="fas fa-check text-primary"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h5 class="fw-bold mb-0" th:text="${longestStreakChallenge.totalCompletedTasks}">42</h5>
+                                    <small class="text-muted">Thói quen hoàn thành</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total Tasks -->
+                    <div class="col-12">
+                        <div class="card h-100" style="border-radius: 12px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                            <div class="card-body d-flex align-items-center p-3">
+                                <div class="me-3">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                         style="width: 40px; height: 40px; background-color: #fff3e0;">
+                                        <i class="fas fa-folder text-warning"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h5 class="fw-bold mb-0" th:text="${longestStreakChallenge.totalExpectedTasks}">58</h5>
+                                    <small class="text-muted">Tổng nhiệm vụ</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Skipped Tasks -->
+                    <div class="col-12">
+                        <div class="card h-100" style="border-radius: 12px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                            <div class="card-body d-flex align-items-center p-3">
+                                <div class="me-3">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                         style="width: 40px; height: 40px; background-color: #ffebee;">
+                                        <i class="fas fa-times-circle text-danger"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h5 class="fw-bold mb-0" th:text="${longestStreakChallenge.skippedTasks}">5</h5>
+                                    <small class="text-muted">Nhiệm vụ bỏ qua</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="col-12">
+                        <div class="card h-100" style="border-radius: 12px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                            <div class="card-body d-flex align-items-center p-3">
+                                <div class="me-3">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                         style="width: 40px; height: 40px; background-color: #e8f5e8;">
+                                        <i class="fa-solid fa-calendar-days text-success"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h5 class="fw-bold mb-0 text-success" th:text="${longestStreakChallenge.challenge.day}+' Ngày'">ACTIVE</h5>
+                                    <small class="text-muted">Thời gian thực hiện</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-body p-4 d-flex justify-content-center" style="background-color: #f5f5f5;" th:if="${longestStreakChallenge==null}">
+                <div id="emptyState" class="empty-state">
+                    <i class="fa-solid fa-flag-checkered"></i>
+                    <h4>Chưa có thử thách nào</h4>
+                    <p>Hãy tạo cho bạn 1 thử thách để trở nên tốt hơn!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--diary detail-->
+<div class="modal fade" id="modalDiary" style="background-color: rgba(44,44,44,0.59)" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header text-bg-warning p-4">
+                <div class="w-100">
+                    <h4 id="diaryContent" class="fw-bold mb-3">Nhật ký</h4>
+                    <input type="text" id="diaryId" style="display: none">
+                    <div class="mb-3">
+                        <label for="diaryContentInput" class="form-label">Nội dung <span class="text-danger">*</span></label>
+                        <textarea class="form-control" style="background-color: rgba(253, 253, 253, 0.5);" id="diaryContentInput" rows="3" readonly></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-center w-100">
+                            <img id="diaryImagePreview" class="img-fluid mt-1" style="max-width: 300px; max-height: 400px; display: none;" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <strong>Task đã hoàn thành:</strong>
+                    <ul id="completedTasksList">
+                        <!-- Danh sách task sẽ được thêm động -->
+                    </ul>
+                </div>
+                <div class="modal-footer ">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Task Completion Statistics Modal -->
+<div class="modal fade task-completion-modal" id="taskCompletionModal" tabindex="-1" aria-labelledby="taskCompletionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title w-100" id="taskCompletionModalLabel">Task đã hoàn thành</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="completion-subtitle">
+                    Tổng thói quen bạn đã hoàn thành được: <span id="totalCompletedTasks" th:text="${completedTask}">24</span>
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <div class="stat-number" id="habitsCount" th:text="${habitsCount}">5</div>
+                        <div class="stat-label">Thói Quen</div>
+                    </div>
+
+                    <div class="stat-divider"></div>
+
+                    <div class="stat-item">
+                        <div class="stat-number" id="dailyHabitsCount" th:text="${dailiesCount}">7</div>
+                        <div class="stat-label">Thói quen hàng ngày</div>
+                    </div>
+
+                    <div class="stat-divider"></div>
+
+                    <div class="stat-item">
+                        <div class="stat-number" id="todosCount" th:text="${todosCount}">12</div>
+                        <div class="stat-label">Việc cần làm</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Edit profile button
+        document.getElementById('editProfile').addEventListener('click', function() {
+            const editProfileModal = new bootstrap.Modal(document.getElementById('editProfileModal'));
+            editProfileModal.show();
+        });
+
+        // Open file input when 'Thay đổi' is clicked
+        const changeAvatarButton = document.getElementById('changeAvatarButton');
+        if (changeAvatarButton) {
+            changeAvatarButton.addEventListener('click', function() {
+                document.getElementById('fileInput').click(); // Kích hoạt input file
+            });
+        }
+
+        // Lắng nghe sự kiện khi người dùng chọn ảnh
+        const fileInput = document.getElementById('fileInput');
+        if (fileInput) {
+            fileInput.addEventListener('change', function(event) {
+                previewImage(event);
+            });
+        }
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('avatarImg').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        document.getElementById('changePasswordForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const oldPasswordField = document.getElementById('OldPassword');
+            const newPasswordField = document.getElementById('newPassword');
+            const confirmPasswordField = document.getElementById('confirmPassword');
+
+
+            if (!newPasswordField.value || newPasswordField.value.trim() === "") {
+                document.getElementById('error-message').textContent = "Mật khẩu mới không được để trống.";
+                document.getElementById('error-message').style.display = 'block';
+                return;
+            }
+
+            if (!confirmPasswordField.value || confirmPasswordField.value.trim() === "") {
+                document.getElementById('error-message').textContent = "Xác nhận mật khẩu không được để trống.";
+                document.getElementById('error-message').style.display = 'block';
+                return;
+            }
+
+            const formData = new FormData(document.getElementById('changePasswordForm')); // Lấy dữ liệu từ form
+
+            fetch('/profile/change_password', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.type == "success") {
+                        document.getElementById('error-message').style.display = 'none';
+                        bootstrap.Modal.getInstance(document.getElementById('changePassword')).hide();
+
+                        showResponseToast('Mật khẩu đã được thay đổi thành công!', 'success');
+                    } else {
+                        document.getElementById('error-message').textContent = `Lỗi: ${data.message || 'Mật khẩu không hợp lệ.'}`;
+                        document.getElementById('error-message').style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('error-message').textContent = `Có lỗi xảy ra: ${error.message}`;
+                    document.getElementById('error-message').style.display = 'block';
+                });
+        });
+
+        // diary
+        window.openDiaryUpdateModal = (diaryId) => {
+            fetch(`/diaries/${diaryId}`)
+                .then(response => {
+                    if (response.url.includes('/login')) {
+                        window.location.href = '/login';
+                        return;
+                    }
+                    return response.json();
+                })
+                .then(diary => {
+                    document.getElementById("diaryId").value = diaryId;
+                    document.getElementById("diaryContentInput").value = diary.content;
+                    if (diary.imageUrl) {
+                        document.getElementById("diaryImagePreview").style.display = 'block';
+                        document.getElementById("diaryImagePreview").src = diary.imageUrl;
+                    } else {
+                        document.getElementById("diaryImagePreview").style.display = 'none';
+                    }
+
+                    const completedTasksList = document.getElementById("completedTasksList");
+                    completedTasksList.innerHTML = '';
+                    if (diary.completedTasks) {
+                        diary.completedTasks.forEach(task => {
+                            const li = document.createElement("li");
+                            li.textContent = task.title;
+                            completedTasksList.appendChild(li);
+                        });
+                    }
+
+
+                    const modalDiary = new bootstrap.Modal(document.getElementById("modalDiary"));
+                    modalDiary.show();
+                })
+                .catch(error => {
+                    console.error('Lỗi khi lấy dữ liệu nhật ký:', error);
+                    alert('Không thể lấy dữ liệu nhật ký. Do phiên đăng nhập hết hạn! Mời đăng nhập lại');
+                });
+        };
+
+        window.openChallengeStats = (challengeId,userChallengeId)=>{
+            fetch(`/challenges/detail/challenge/${challengeId}`)
+                .then(response=>{
+                    if(response.url.includes("/login")){
+                        window.location.href="/login";
+                        return;
+                    }
+                    return response.json()
+                }).then(data=>{
+                    console.log(data)
+                    document.getElementById("challengeStatsModalLabel").textContent = data.title;
+                    document.getElementById("progressPercentage").textContent = data.progress+"%";
+                    document.getElementById("evaluationRate").textContent = data.evaluationPercentage+"/100";
+                    document.getElementById("streakNumber").textContent = data.bestStreak;
+                    document.getElementById("completedTasks").textContent = data.completedTasks;
+                    document.getElementById("totalTasks").textContent = data.totalExpectedTasks;
+                    document.getElementById("skippedTasks").textContent = data.skippedTasks;
+                    document.getElementById("challengeDate").textContent = data.startDate+ ' đến '+ data.endDate;
+                    document.getElementById("challengeDay").textContent = data.day;
+
+                    const diaryButton = document.getElementById('diaryDuringChallenge');
+                    diaryButton.setAttribute('data-user-challenge-id', userChallengeId);
+
+                    const modal = new bootstrap.Modal(document.getElementById("challengeStatsModal"))
+                    modal.show()
+            }).catch(err=>{
+                console.log(err);
+                alert("Phiên đăng nhập hết hạn!Đăng nhập lại "+err)
+            })
+        }
+
+        // Xử lý sự kiện click cho nút xem nhật ký
+        const diaryButton = document.getElementById('diaryDuringChallenge');
+        if(diaryButton){
+            diaryButton.addEventListener('click', function() {
+                const userChallengeId = this.getAttribute('data-user-challenge-id');
+                if (userChallengeId) {
+                    fetch(`/diaries/inChallenge/${userChallengeId}`)
+                        .then(response =>{
+                            if(response.url.includes("/login")){
+                                window.location.href = "/login"
+                                return;
+                            }
+                            return response.json();
+                        })
+                        .then(diaries => {
+                            const diaryListContainer = document.getElementById('diaryListContainer');
+                            const diaryListCount = document.getElementById('diaryListCount');
+                            diaryListContainer.innerHTML = '';
+
+                            if (diaries && diaries.length > 0) {
+                                diaryListCount.textContent = `Tìm thấy ${diaries.length} nhật ký.`;
+                                diaries.forEach(diary => {
+                                    const diaryCard = document.createElement('div');
+                                    diaryCard.className = 'diary-card mb-3';
+                                    diaryCard.style.cursor = 'pointer';
+                                    // Định dạng lại ngày tháng cho dễ đọc
+                                    const formattedDate = new Date(diary.date).toLocaleDateString('vi-VN', {
+                                        day: '2-digit', month: '2-digit', year: 'numeric'
+                                    });
+                                    diaryCard.innerHTML = `
+                                        <div class="challenge-card-content">
+                                            <h5 class="challenge-name" onclick="openChallengeDiaryDetailModal(${diary.diaryId})">Ngày: ${formattedDate}</h5>
+
+                                        </div>
+                                    `;
+                                    // diaryCard.onclick = () => openChallengeDiaryDetailModal(diary.diaryId);
+                                    diaryListContainer.appendChild(diaryCard);
+                                });
+                            } else {
+                                diaryListCount.textContent = 'Không tìm thấy nhật ký nào.';
+                                diaryListContainer.innerHTML = '<p class="text-center text-muted">Bạn chưa viết nhật ký nào trong suốt thử thách này.</p>';
+                            }
+                            const modal = new bootstrap.Modal(document.getElementById("diaryListModal"));
+                            modal.show();
+
+                        })
+                        .catch(error => console.error('Lỗi khi lấy danh sách nhật ký:', error));
+                }
+            });
+        }
+
+        // Hàm mở modal chi tiết nhật ký
+        window.openChallengeDiaryDetailModal = (diaryId) => {
+            fetch(`/diaries/${diaryId}`)
+                .then(response => {
+                    if(response.url.includes("/login")){
+                        window.location.href = "/login"
+                        return;
+                    }
+                    return response.json();
+                })
+                .then(diary => {
+                    document.getElementById('diaryDetailContentInput').value = diary.content;
+                    const imgPreview = document.getElementById('diaryDetailImagePreview');
+                    if (diary.imageUrl) {
+                        imgPreview.src = diary.imageUrl;
+                        imgPreview.style.display = 'block';
+                    } else {
+                        imgPreview.style.display = 'none';
+                    }
+
+                    const taskList = document.getElementById('diaryDetailCompletedTasksList');
+                    taskList.innerHTML = '';
+                    if (diary.completedTasks && diary.completedTasks.length > 0) {
+                        diary.completedTasks.forEach(task => {
+                            const li = document.createElement('li');
+                            li.textContent = task.title;
+                            taskList.appendChild(li);
+                        });
+                    } else {
+                        taskList.innerHTML = '<li>Không có task nào được ghi nhận.</li>';
+                    }
+
+
+                    const modal = new bootstrap.Modal(document.getElementById("diaryDetailModal"));
+                    modal.show();
+
+                })
+                .catch(error => console.error('Lỗi khi lấy chi tiết nhật ký:', error));
+        };
+
+        // Add hover effects to stat cards
+        const statCards = document.querySelectorAll('.stat-card');
+        statCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                const statValue = card.querySelector('.stat-value');
+                statValue.style.color = '#007bff';
+            });
+            card.addEventListener('mouseleave', function() {
+                const statValue = card.querySelector('.stat-value');
+                if (!card.classList.contains('rank-card')) {
+                    statValue.style.color = '#333';
+                }
+            });
+        });
+
+        // Animate numbers on page load
+        animateNumbers();
+
+        function animateNumbers() {
+            const statValues = document.querySelectorAll('.stat-value');
+            statValues.forEach(statValue => {
+                const text = statValue.textContent;
+                const number = parseInt(text.replace(/\D/g, ''));
+
+                if (!isNaN(number)) {
+                    statValue.textContent = '0';
+                    let currentNumber = 0;
+
+                    const interval = setInterval(() => {
+                        currentNumber += Math.ceil(number / 150);
+                        statValue.textContent = currentNumber;
+                        if (currentNumber >= number) {
+                            clearInterval(interval);
+                        }
+                    }, 10); // Adjust timing for smooth animation
+                }
+            });
+        }
+    });
+
+</script>
+</body>
+</html>
